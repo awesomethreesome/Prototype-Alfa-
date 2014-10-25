@@ -74,7 +74,7 @@ public class MainProcedure extends ActionSupport {
 	
 	public String detailQueryinSearch() {
 		int index = findIndexofChosenNode();
-		detailBuffer = new NodeRecord(currentSons.get(index));
+		setDetailBuffer(new NodeRecord(currentSons.get(index)));
 		return "QUERY_APPROVED"; 
 	}
 	
@@ -89,6 +89,7 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	
+	
 	public String blankSwitch() {
 		return "SWITCH_APPROVED";
 	}
@@ -99,6 +100,10 @@ public class MainProcedure extends ActionSupport {
 		
 		return "IMPORT_DONE";
 	}
+	
+	
+	
+	
 	/////private methods
 	private void transcribeNode( ResultSet sr ) throws SQLException {//////////////////////////////////////////
 		
@@ -209,5 +214,13 @@ public class MainProcedure extends ActionSupport {
 
 	public static long getSerialversionuid() {
 		return serialVersionUID;
+	}
+
+	public static NodeRecord getDetailBuffer() {
+		return detailBuffer;
+	}
+
+	public static void setDetailBuffer(NodeRecord detailBuffer) {
+		MainProcedure.detailBuffer = detailBuffer;
 	}
 }
