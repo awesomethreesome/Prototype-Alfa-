@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE struts PUBLIC "-//Apache Software Foundation//DTD Struts Configuration 2.1//EN" "http://struts.apache.org/dtds/struts-2.1.dtd">
+<struts>
+	<package name = "R-R" extends = "struts-default">
+		<!-- in welcome.jsp -->
+			<action name = "USER_LOGIN" class = "actions.MainProcedure" method = "logInCheck">
+				<result name = "AUTHORIZED">/index.jsp</result>
+				<result name = "UN_AUTHORIZED">/welcome.jsp</result>
+			</action>
+		<!-- in index.jsp -->
+			<action name = "SEARCH_QUERY" class = "actions.MainProcedure" method = "searchQuery">
+				<result name = "QUERY_DONE">/showResult.jsp</result>
+			</action>
+			<action name = "MANAGE_QUERY" class = "actions.MainProcedure" method = "manageQuery">
+				<result name = "QUERY_DONE">/userTrees.jsp</result>
+			</action>
+		
+		<!-- in showResult.jsp -->
+			<action name = "EDIT_RECORD" class = "actions.MainProcedure" method = "editQuery">
+				<result name = "EDIT_AUTHORIZED">/edit.jsp</result>
+				<result name = "EDIT_UNAUTHORIZED">/errorPage.jsp</result>
+			</action>
+			<action name = "SHOW_DETAIL" class = "actions.MainProcedure" method = "detailQuery">
+				<result name = "QUERY_APPROVED">/detail.jsp</result>
+				<result name = "ERROR" >/errorPage.jsp </result>
+			</action>
+			<action name = "BACK_TO_START" class = "actions.MainProcedure" method = "adminSwitch">
+				<result name = "SWITCH_APPROVED" >/index.jsp </result>
+				<result name = "ADMIN_SWITCH_APPROVED">/AdminIndex.jsp </result>
+			</action>
+			
+			
+		<!-- in userTrees.jsp -->
+		 
+		<!-- in searchDetail.jsp -->
+			<action name = "BACK_TO_SHOWRESULT" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED" >/showResult.jsp </result>
+			</action>
+			
+		<!-- in userDetail.jsp -->
+		
+		
+		<!-- in node.jsp -->
+		
+		
+		
+		<!-- in edit.jsp -->
+			<action name = "UPDATE_BOOK" class = "actions.MainProcedure" method = "updateBook">
+				<result name = "UPDATE_DONE">/edit.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
+			</action>
+			<action name = "DELETE_BOOK" class = "actions.MainProcedure" method = "deleteBook">
+				<result name = "DELETE_DONE">/edit.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
+			</action>
+		
+		<!-- in addNode.jsp -->
+		
+		
+		
+		<!-- (optional) in AdminIndex.jsp  -->
+		<!--	
+			<action name = "INSERT_RECORD" class = "actions.MainProcedure" method = "insertRecord">
+					<result name = "INSERT_DONE">/AdminIndex.jsp</result>
+					<result name = "ERROR">/errorPage.jsp</result>
+			</action>
+			<action name = "LOG_OUT" class = "actions.MainProcedure" method = "logOut">
+				<result name = "LOGOUT_DONE">/index.jsp</result>
+			</action>
+		-->	
+		<!-- in errorPage.jsp -->
+			<action name = "ERROR_RECOVER" class = "actions.MainProcedure" method = "errorRecover">
+				<result name = "TURN_BACK">/index.jsp</result>
+				<result name = "TURN_BACK_ADMIN">/AdminIndex.jsp</result>
+			</action>
+			
+			
+	</package> 
+</struts>    
