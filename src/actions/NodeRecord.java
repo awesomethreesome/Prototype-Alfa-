@@ -88,5 +88,5 @@ public class NodeRecord {
 	private int age;
 	private String profession;
 	private String institution;
-	private String link;
+	private String link;//this suppose to be an valid URL
 }

@@ -29,15 +29,17 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     <table border = 1, align = "CENTER" >
     	<!-- the head of the table -->
     	<tr>
-    		<td> Title </td>
-    		<td> Author </td>
-    		<td> Publisher </td>
-    		<td> Option </td>
+    		<td> Ascend </td>
+    		<td> Name </td>
+    		<td> Institution </td>
+    		<td> Profession </td>
+    		
+    		<td> Descend </td>
     	</tr>
-    <s:iterator value = "bookSR" id = "i" status = "struts" >
+    <s:iterator value = "currentSons" id = "i" status = "struts" >
     	<!-- the solid content -->
     	<tr>
-    		<td><s:url id="detailURL" action="SHOW_DETAIL">
+    		<td><s:url id="detailURL" action="SHOW_DETAIL_IN_SEARCHING">
     				<s:param name = "currentISBN" value = "#i.ISBN" /> 
     			</s:url>
 				<s:a href="%{detailURL}">

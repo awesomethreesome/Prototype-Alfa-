@@ -22,43 +22,81 @@ public class MainProcedure extends ActionSupport {
 	public String logInCheck(){
 		if ( inputPassword.equals(passWord) && inputUserName.equals(userName)){
 			authorized = true;
-			System.out.println("when login :" + authorized);
+			//search the user info 
+			ResultSet temp = dataBase.selectUser( userName ,  inputPassword );
+			if ( temp == null ) {
+				authorized = false;
+				return "UN_AUTHORIZED";
+			}
+			transcribeUser( temp );//current user info has be loaded into currentUser 
 			return "AUTHORIZED";
 		}
 		authorized = false;
-		System.out.println("when login :" + authorized);
 		return "UN_AUTHORIZED";
+	}
+	
+	public String manageQuery(){
+		ResultSet  temp = null; 
+		temp = dataBase.selectRootNodebyUserID( currentUser.getUserID() );
+		if ( temp == null ) {
+			return "ERROR";
+		}
+		transcribeNode( temp );//all roots has been loaded into currentSons
+		currentNode.setFather(ROOT_STAGE);//indicating that it on the root stage
+		return "QUERY_DONE";
+	}
+	
+	public String searchQuery() throws SQLException{
+		//queryType has 3 possible values{Name, Institution, Profession, }
+		ResultSet temp = null, temp_ = null;
+		if ( queryType.equals("Name")  ) {
+			temp = dataBase.selectNodebyName(queryInput);		
+		}
+		else if ( queryType.equals("Institution") ) {
+			temp = dataBase.selectNodebyIns(queryInput);
+		}
+		else if ( queryType.equals("Profession") ) {
+			temp = dataBase.selectNodebyPro(queryInput);
+		}
+		else {//default option is search by book title
+			temp = dataBase.selectBookbyName(queryInput);
+		}
+		transcribeNode( temp );//now all selected book have been stored in currentSons, which is a list of NodeRecord
+		
+		return "QUERY_DONE";
 	}
 	
 	
 	
 	
+	
+	/////private methods
+	private void transcribeNode( ResultSet sr ) throws SQLException {//////////////////////////////////////////
+		
+	}
+	
+	private void transcribeUser( ResultSet sr ) throws SQLException{////////////////////////////////////////
+		
+	}
+	
 	/////public variables
 	
 	public static int INT_INVALID = -1;
 	public static double DOUBLE_INVALID = -1.0;
+	public static String ROOT_STAGE = "end of the line";
+	public static String SEARCHING_STAGE = "on searching";
 	/////private variables
 	private DBManager dataBase = new DBManager();//
 	private final String passWord = "vorstellung";
 	private final String userName = "wille"; 
 	private static boolean authorized = false;
-	private static int currentIndex = INT_INVALID;//the index of chosen book in bookSR
+	private static int currentIndex = INT_INVALID;//the index of chosen node in currentSons
 	
-	private static List<BookRecord> bookSR = new ArrayList<BookRecord>();//book search results
-	private static AuthorRecord authorSR = new AuthorRecord();//author search results
-	
-	private static String currentISBN = null;//the ISBN of chosen book in bookSR
-	private static BookRecord currentBook = null;//current chosen book
-	private static String isUpAuthor = "No";//only has 2 possible values{Yes, No} 
+	private static List<NodeRecord> currentSons = new ArrayList<NodeRecord>();//all sons of currentNode
+	private static NodeRecord currentNode = new NodeRecord();//current chosen node
+	private static UserRecord currentUser = new UserRecord() ;//current user 
 	
 	private static String queryInput, queryType;//queryType has 3 possible values{Name, Institution, Profession, }
 	private static String inputPassword, inputUserName;
-	
-	private static String upISBN, upTitle, upPub, upPubDate, upName, upCountry;//used for update and add
-	private static int upAuthorID, upAge;
-	private static double upPrice;
-	
-	//private static boolean deleteRecord;
-	
-	//private static int cnt=0; 
+	 
 }

@@ -28,9 +28,11 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     	<s:textfield name = "queryInput" align = "CENTER" />
     	<s:radio name = "queryType" label = "Search Option*" list = "{'Name', 'Institution', 'Profession', 'N\A'}"/>
     	<s:submit align = "CENTER"/>
-     </s:form>
+    </s:form>
      
-  
+  	<s:form action = "MANAGE_QUERY" align = "CENTER">
+  		<s:submit value = "My Trees"  />
+  	</s:form>
      
      
     <h6 align = "CENTER" > Edition 1.0</h6> <br>

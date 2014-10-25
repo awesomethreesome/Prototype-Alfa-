@@ -10,9 +10,11 @@
 		<!-- in index.jsp -->
 			<action name = "SEARCH_QUERY" class = "actions.MainProcedure" method = "searchQuery">
 				<result name = "QUERY_DONE">/showResult.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
 			<action name = "MANAGE_QUERY" class = "actions.MainProcedure" method = "manageQuery">
 				<result name = "QUERY_DONE">/userTrees.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
 		
 		<!-- in showResult.jsp -->
@@ -70,8 +72,7 @@
 		-->	
 		<!-- in errorPage.jsp -->
 			<action name = "ERROR_RECOVER" class = "actions.MainProcedure" method = "errorRecover">
-				<result name = "TURN_BACK">/index.jsp</result>
-				<result name = "TURN_BACK_ADMIN">/AdminIndex.jsp</result>
+				<result name = "TURN_BACK">/welcome.jsp</result>
 			</action>
 			
 			
