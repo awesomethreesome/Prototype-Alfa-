@@ -89,12 +89,16 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	
-	
-	
 	public String blankSwitch() {
 		return "SWITCH_APPROVED";
 	}
 	
+	public String importNode() {////////////////////////////////////////////////////////////////////////////////
+		//import the node in detailBuffer to be a local root 
+		
+		
+		return "IMPORT_DONE";
+	}
 	/////private methods
 	private void transcribeNode( ResultSet sr ) throws SQLException {//////////////////////////////////////////
 		

@@ -16,7 +16,7 @@
 				<result name = "QUERY_DONE">/userTrees.jsp</result>
 				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
-		
+		<!-- //////////////////////////////the searching routine below //////////////////////////////////////////-->
 		<!-- in showResult.jsp -->
 			<action name = "ASCEND_QUERY" class = "actions.MainProcedure" method = "ascendQuery">
 				<result name = "ASCEND_DONE">/showResult.jsp</result>
@@ -33,20 +33,19 @@
 			<action name = "BACK_TO_START" class = "actions.MainProcedure" method = "blankSwitch">
 				<result name = "SWITCH_APPROVED" >/index.jsp </result>
 			</action>
-				
-		<!-- in userTrees.jsp -->
-		 	
-		 	
-		 	
+	 	
 		<!-- in searchDetail.jsp -->
+			<action name = "IMPORT_NODE" class = "actions.MainProcedure" method = "importNode">
+				<result name = "IMPORT_DONE">/searchDetail.jsp</result>		
+			</action>
 			<action name = "BACK_TO_SHOWRESULT" class = "actions.MainProcedure" method = "blankSwitch">
 				<result name = "SWITCH_APPROVED" >/showResult.jsp </result>
 			</action>
+		<!-- //////////////////////////////the management routine below //////////////////////////////////////////-->
+		<!-- in userTrees.jsp -->
 			
 		<!-- in userDetail.jsp -->
-		
-		
-		
+			
 		
 		<!-- in edit.jsp -->
 			<action name = "UPDATE_BOOK" class = "actions.MainProcedure" method = "updateBook">

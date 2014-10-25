@@ -30,25 +30,24 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     	<!-- the head of the table -->
     	<tr>
     		<td> Name </td>
-    		<td>  </td>
-    		<td> AuthorID </td>
-    		<td> Author </td>
-    		<td> Publisher </td>
-    		<td> PublishDate </td>
-    		<td> Price </td>
+    		<td> Age </td>
+    		<td> Profession </td>
+    		<td> Institution </td>
+    		<td> Link </td>
     	</tr>
     	<!-- solid info -->
     	<tr>
-    		<td> <s:property value = "currentBook.ISBN" /> </td>
-    		<td> <s:property value = "currentBook.Title" /> </td>
-    		<td> <s:property value = "currentBook.AuthorID" /> </td>
-    		<td> <s:property value = "authorSR.Name" /> </td>
-    		<td> <s:property value = "currentBook.Publisher" /> </td>
-    		<td> <s:property value = "currentBook.PublishDate" /> </td>
-    		<td> <s:property value = "currentBook.Price" /> </td>
+    		<td> <s:property value = "detailBuffer.name" /> </td>
+    		<td> <s:property value = "detailBuffer.age" /> </td>
+    		<td> <s:property value = "detailBuffer.profession" /> </td>
+    		<td> <s:property value = "detailBuffer.Institution" /> </td>
+    		<td> <s:property value = "detailBuffer.link" /> </td>
     	</tr>
     </table>   
      
+    <s:form action = "IMPORT_NODE">
+    	<s:submit  value = "Import this node to your repository" />
+    </s:form> 
     <s:form action = "BACK_TO_START" >
     	<s:submit value = "Backward" />
     </s:form>
