@@ -18,22 +18,26 @@
 			</action>
 		
 		<!-- in showResult.jsp -->
-			<action name = "EDIT_RECORD" class = "actions.MainProcedure" method = "editQuery">
-				<result name = "EDIT_AUTHORIZED">/edit.jsp</result>
-				<result name = "EDIT_UNAUTHORIZED">/errorPage.jsp</result>
+			<action name = "ASCEND_QUERY" class = "actions.MainProcedure" method = "ascendQuery">
+				<result name = "ASCEND_DONE">/showResult.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
-			<action name = "SHOW_DETAIL" class = "actions.MainProcedure" method = "detailQuery">
-				<result name = "QUERY_APPROVED">/detail.jsp</result>
+			<action name = "DETAIL_QUERY_IN_SEARCHING" class = "actions.MainProcedure" method = "detailQueryinSearch">
+				<result name = "QUERY_APPROVED">/searchDetail.jsp</result>
 				<result name = "ERROR" >/errorPage.jsp </result>
 			</action>
-			<action name = "BACK_TO_START" class = "actions.MainProcedure" method = "adminSwitch">
-				<result name = "SWITCH_APPROVED" >/index.jsp </result>
-				<result name = "ADMIN_SWITCH_APPROVED">/AdminIndex.jsp </result>
+			<action name = "DESCEND_QUERY" class = "actions.MainProcedure" method = "descendQuery">
+				<result name = "DESCEND_DONE">/showResult.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
-			
-			
+			<action name = "BACK_TO_START" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED" >/index.jsp </result>
+			</action>
+				
 		<!-- in userTrees.jsp -->
-		 
+		 	
+		 	
+		 	
 		<!-- in searchDetail.jsp -->
 			<action name = "BACK_TO_SHOWRESULT" class = "actions.MainProcedure" method = "blankSwitch">
 				<result name = "SWITCH_APPROVED" >/showResult.jsp </result>
@@ -41,8 +45,6 @@
 			
 		<!-- in userDetail.jsp -->
 		
-		
-		<!-- in node.jsp -->
 		
 		
 		

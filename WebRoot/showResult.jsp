@@ -10,7 +10,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   <head>
     <base href="<%=basePath%>">
     
-    <title>BMS result page</title>
+    <title> R-R result page</title>
     
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
@@ -33,25 +33,30 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     		<td> Name </td>
     		<td> Institution </td>
     		<td> Profession </td>
-    		
     		<td> Descend </td>
     	</tr>
     <s:iterator value = "currentSons" id = "i" status = "struts" >
     	<!-- the solid content -->
     	<tr>
-    		<td><s:url id="detailURL" action="SHOW_DETAIL_IN_SEARCHING">
-    				<s:param name = "currentISBN" value = "#i.ISBN" /> 
+    		<td><s:url id="ascendURL" action="ASCEND_QUERY">
+    				<s:param name = "chosenKey" value = "#i.key" /> 
+    			</s:url>
+				<s:a href="%{asendURL}">
+					ASCEND
+				</s:a> </td>
+    		<td><s:url id="detailURL" action="DETAIL_QUERY_IN_SEARCHING">
+    				<s:param name = "chosenKey" value = "#i.key" /> 
     			</s:url>
 				<s:a href="%{detailURL}">
-					<s:property value = "#i.Title" />
+					<s:property value = "#i.Name" />
 				</s:a> </td>
-    		<td><s:property value = "#i.AuthorID" /> </td>
-    		<td><s:property value = "#i.Publisher"/> </td>
-    		<td><s:url id="editURL" action="EDIT_RECORD">
-    				<s:param name = "currentISBN" value = "#i.ISBN" /> 
+    		<td><s:property value = "#i.institution" /> </td>
+    		<td><s:property value = "#i.profession"/> </td>
+    		<td><s:url id="descendURL" action="DESCEND_QUERY">
+    				<s:param name = "chosenKey" value = "#i.key" />
     			</s:url>
-				<s:a href="%{editURL}">
-					Edit 
+				<s:a href="%{desendURL}">
+					DESCEND
 				</s:a> </td>
     	</tr>
     </s:iterator>

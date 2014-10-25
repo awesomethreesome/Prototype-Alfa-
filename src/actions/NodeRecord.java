@@ -6,6 +6,19 @@ public class NodeRecord {
 		
 	}
 		
+	public NodeRecord(NodeRecord nodeRecord) {
+		// TODO Auto-generated constructor stub
+		key = nodeRecord.getKey();
+		userID = new String(nodeRecord.getUserID());
+		father = new String(nodeRecord.getFather());
+		son = new String(nodeRecord.getSon());
+		name = new String(nodeRecord.getName());
+		age = nodeRecord.getAge();
+		profession = new String(nodeRecord.getProfession());
+		institution = new String(nodeRecord.getInstitution());
+		link = new String(nodeRecord.getLink());
+	}
+
 	public int getKey() {
 		return key;
 	}

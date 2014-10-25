@@ -68,16 +68,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     <s:form action = "BACK_TO_SHOWRESULT" >
     	<s:submit value = "Backward" />
     </s:form>
-	<!--     
-     <h6>  
-    	test <br> 
-    	1. <s:property value = "currentIndex" /> <br>
-    	2. <s:property value = "currentISBN" /> <br>
-    	3. <s:property value = "bookSR.get(currentIndex).Title" /> <br>
-    	4. <s:property value = "bookSR.size()" /> <br>
-    	5. <s:property value = "authorSR.Name" /> <br>
-    	6. <s:property value = "authorized" /> <br>
-    </h6>
-     -->
+    
   </body>
 </html>

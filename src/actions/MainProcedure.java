@@ -67,8 +67,33 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	
+	public String ascendQuery() {///////////////////////////////////////////////////////////////////////////
+		
+		return "ASCEND_DONE";
+	}
+	
+	public String detailQueryinSearch() {
+		int index = findIndexofChosenNode();
+		detailBuffer = new NodeRecord(currentSons.get(index));
+		return "QUERY_APPROVED"; 
+	}
+	
+	public String descendQuery() {
+		int index = findIndexofChosenNode();
+		//set the chosen node as new father
+		currentNode = new NodeRecord(currentSons.get(index));		
+		//search sons of currentNode	
+		ResultSet temp = dataBase.selectNodebyFatherKey( currentNode.getKey() );
+		transcribeNode( temp );//now the new sons has been loaded into currentSons
+		return "DESCEND_DONE";
+	}
 	
 	
+	
+	
+	public String blankSwitch() {
+		return "SWITCH_APPROVED";
+	}
 	
 	/////private methods
 	private void transcribeNode( ResultSet sr ) throws SQLException {//////////////////////////////////////////
@@ -79,8 +104,19 @@ public class MainProcedure extends ActionSupport {
 		
 	}
 	
+	private int findIndexofChosenNode(){
+		//find the chosen node in currentSons
+		int i = 0;
+		for (i = 0; i < currentSons.size(); i++){
+			if ( currentSons.get(i).getKey() == chosenKey ){
+				break;
+			}
+		}
+		return i;
+	}
 	/////public variables
 	
+
 	public static int INT_INVALID = -1;
 	public static double DOUBLE_INVALID = -1.0;
 	public static String ROOT_STAGE = "end of the line";
@@ -90,13 +126,84 @@ public class MainProcedure extends ActionSupport {
 	private final String passWord = "vorstellung";
 	private final String userName = "wille"; 
 	private static boolean authorized = false;
-	private static int currentIndex = INT_INVALID;//the index of chosen node in currentSons
+	private static int chosenKey = INT_INVALID;//the key of chosen node in currentSons
 	
 	private static List<NodeRecord> currentSons = new ArrayList<NodeRecord>();//all sons of currentNode
 	private static NodeRecord currentNode = new NodeRecord();//current chosen node
-	private static UserRecord currentUser = new UserRecord() ;//current user 
+	private static UserRecord currentUser = new UserRecord() ;//current user
+	private static NodeRecord detailBuffer = new NodeRecord();//store the node whose detail is to be displayed
 	
 	private static String queryInput, queryType;//queryType has 3 possible values{Name, Institution, Profession, }
 	private static String inputPassword, inputUserName;
-	 
+	
+	
+	
+	/////all setters and getters
+	public static int getChosenKey() {
+		return chosenKey;
+	}
+
+	public static void setChosenKey(int chosenKey) {
+		MainProcedure.chosenKey = chosenKey;
+	}
+
+	public static List<NodeRecord> getCurrentSons() {
+		return currentSons;
+	}
+
+	public static void setCurrentSons(List<NodeRecord> currentSons) {
+		MainProcedure.currentSons = currentSons;
+	}
+
+	public static NodeRecord getCurrentNode() {
+		return currentNode;
+	}
+
+	public static void setCurrentNode(NodeRecord currentNode) {
+		MainProcedure.currentNode = currentNode;
+	}
+
+	public static UserRecord getCurrentUser() {
+		return currentUser;
+	}
+
+	public static void setCurrentUser(UserRecord currentUser) {
+		MainProcedure.currentUser = currentUser;
+	}
+
+	public static String getQueryInput() {
+		return queryInput;
+	}
+
+	public static void setQueryInput(String queryInput) {
+		MainProcedure.queryInput = queryInput;
+	}
+
+	public static String getQueryType() {
+		return queryType;
+	}
+
+	public static void setQueryType(String queryType) {
+		MainProcedure.queryType = queryType;
+	}
+
+	public static String getInputPassword() {
+		return inputPassword;
+	}
+
+	public static void setInputPassword(String inputPassword) {
+		MainProcedure.inputPassword = inputPassword;
+	}
+
+	public static String getInputUserName() {
+		return inputUserName;
+	}
+
+	public static void setInputUserName(String inputUserName) {
+		MainProcedure.inputUserName = inputUserName;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
 }
