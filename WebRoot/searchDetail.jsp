@@ -48,7 +48,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     <s:form action = "IMPORT_NODE">
     	<s:submit  value = "Import this node to your repository" />
     </s:form> 
-    <s:form action = "BACK_TO_START" >
+    <s:form action = "BACK_TO_SHOWRESULT" >
     	<s:submit value = "Backward" />
     </s:form>
     

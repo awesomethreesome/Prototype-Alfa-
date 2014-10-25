@@ -1,4 +1,5 @@
 <%@ page language="java" import="java.util.*" pageEncoding="ISO-8859-1"%>
+<%@ taglib prefix="s" uri="/struts-tags" %>
 <%
 String path = request.getContextPath();
 String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.getServerPort()+path+"/";
@@ -9,7 +10,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   <head>
     <base href="<%=basePath%>">
     
-    <title>My JSP 'addRecord.jsp' starting page</title>
+    <title> R-R Add New Node page</title>
     
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
@@ -23,6 +24,20 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   </head>
   
   <body>
-    This is my JSP page. <br>
+    <h1 align = "CENTER" > Add Node </h1> <br>
+    <h2> New Node Info* </h2>
+    <s:form align = "CENTER" action = "ADD_QUERY" >
+    	<s:textfield name = "upName" label = "New Name"/>
+    	<s:textfield name = "upAge" label = "New Age"/>
+    	<s:textfield name = "upPro" label = "New Profession"/>
+    	<s:textfield name = "upIns" label = "New Institution"/>
+    	<s:textfield name = "upLink" label = "New Link"/>
+    	<s:submit value = "Add"/>
+    </s:form> 
+    <h5 align = "CENTER" > *Fill every blank to avoid error. </h5>
+    
+    <s:form action = "BACK_TO_USERTREES" >
+    	<s:submit value = "Backward" />
+    </s:form>
   </body>
 </html>

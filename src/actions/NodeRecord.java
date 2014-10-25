@@ -19,6 +19,31 @@ public class NodeRecord {
 		link = new String(nodeRecord.getLink());
 	}
 
+	public void clear(){
+		key = INT_INVALID;
+		userID = STRING_INVALID;
+		father = STRING_INVALID;
+		son = STRING_INVALID;
+		name = STRING_INVALID;
+		age = INT_INVALID;
+		profession = STRING_INVALID;
+		institution = STRING_INVALID;
+		link = STRING_INVALID;
+	}
+	
+	public static int INT_INVALID = -1;
+	public static String STRING_INVALID = "";
+	
+	private int key;
+	private String userID;
+	private String father;
+	private String son;
+	private String name;
+	private int age;
+	private String profession;
+	private String institution;
+	private String link;//this suppose to be an valid URL
+	
 	public int getKey() {
 		return key;
 	}
@@ -92,14 +117,4 @@ public class NodeRecord {
 		this.institution = institution;
 	}
 
-
-	private int key;
-	private String userID;
-	private String father;
-	private String son;
-	private String name;
-	private int age;
-	private String profession;
-	private String institution;
-	private String link;//this suppose to be an valid URL
 }

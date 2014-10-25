@@ -72,7 +72,7 @@ public class MainProcedure extends ActionSupport {
 		return "ASCEND_DONE";
 	}
 	
-	public String detailQueryinSearch() {
+	public String detailQuery() {
 		int index = findIndexofChosenNode();
 		setDetailBuffer(new NodeRecord(currentSons.get(index)));
 		return "QUERY_APPROVED"; 
@@ -88,7 +88,10 @@ public class MainProcedure extends ActionSupport {
 		return "DESCEND_DONE";
 	}
 	
-	
+	public String editQuery() {
+		//int index = findIndexofChosenNode();
+		return "QUERY_DONE"; 
+	}
 	
 	public String blankSwitch() {
 		return "SWITCH_APPROVED";
@@ -102,7 +105,37 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	
+	public String updateQuery() {
+		if ( dataBase.updateNode(chosenKey, upName, upAge, upPro, upIns, upLink) == true ) {
+			cleanUpdateBuffer();
+			return "UPDATE_DONE";
+		}
+		cleanUpdateBuffer();
+		return "ERROR";
+	}
 	
+	public String deleteQuery() {
+		int index = findIndexofChosenNode();
+		if ( index < 0 || index > currentSons.size() )
+			return "ERROR";
+		if ( dataBase.deleteNode(chosenKey) == true ) { 
+			return "DELETE_DONE";
+		}
+		return "ERROR";
+	}
+	
+	public String addQuery() {
+		boolean flag;
+		//insert new node
+		//notice that the Key of this new node is automatically gennerated by the database and it's unique
+		flag = dataBase.insertNode(currentUser.getUserID(), currentNode.getKey(), upName, upAge, upPro, upIns, upLink); 
+		if ( flag == false ) {
+			cleanUpdateBuffer();
+			return "ERROR";
+		}
+		cleanUpdateBuffer();
+		return "ADD_DONE";
+	}
 	
 	/////private methods
 	private void transcribeNode( ResultSet sr ) throws SQLException {//////////////////////////////////////////
@@ -122,6 +155,15 @@ public class MainProcedure extends ActionSupport {
 			}
 		}
 		return i;
+	}
+	
+	private void cleanUpdateBuffer() {
+		updateBuffer.clear();
+		upAge = NodeRecord.INT_INVALID;
+		upName = NodeRecord.STRING_INVALID;
+		upPro = NodeRecord.STRING_INVALID;
+		upIns = NodeRecord.STRING_INVALID;
+		upLink = NodeRecord.STRING_INVALID;
 	}
 	/////public variables
 	
@@ -145,6 +187,9 @@ public class MainProcedure extends ActionSupport {
 	private static String queryInput, queryType;//queryType has 3 possible values{Name, Institution, Profession, }
 	private static String inputPassword, inputUserName;
 	
+	private static NodeRecord updateBuffer = new NodeRecord(); 
+	private String upName, upPro, upIns, upLink;
+	private int upAge;  
 	
 	
 	/////all setters and getters
@@ -222,5 +267,53 @@ public class MainProcedure extends ActionSupport {
 
 	public static void setDetailBuffer(NodeRecord detailBuffer) {
 		MainProcedure.detailBuffer = detailBuffer;
+	}
+
+	public static NodeRecord getUpdateBuffer() {
+		return updateBuffer;
+	}
+
+	public static void setUpdateBuffer(NodeRecord updateBuffer) {
+		MainProcedure.updateBuffer = updateBuffer;
+	}
+
+	public String getUpName() {
+		return upName;
+	}
+
+	public void setUpName(String upName) {
+		this.upName = upName;
+	}
+
+	public String getUpPro() {
+		return upPro;
+	}
+
+	public void setUpPro(String upPro) {
+		this.upPro = upPro;
+	}
+
+	public String getUpIns() {
+		return upIns;
+	}
+
+	public void setUpIns(String upIns) {
+		this.upIns = upIns;
+	}
+
+	public String getUpLink() {
+		return upLink;
+	}
+
+	public void setUpLink(String upLink) {
+		this.upLink = upLink;
+	}
+
+	public int getUpAge() {
+		return upAge;
+	}
+
+	public void setUpAge(int upAge) {
+		this.upAge = upAge;
 	}
 }

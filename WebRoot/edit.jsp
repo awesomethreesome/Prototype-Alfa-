@@ -10,7 +10,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   <head>
     <base href="<%=basePath%>">
     
-    <title> BMS record edit page</title>
+    <title> R-R Node Edit page</title>
     
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
@@ -24,41 +24,33 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   </head>
   
   <body>
-    <h1 align = "CENTER" > Edit Record </h1> <br>
+    <h1 align = "CENTER" > Edit Node Info </h1> <br>
     <h2> Update Record* </h2>
-    <s:form align = "CENTER" action = "UPDATE_BOOK" >
-    	<s:textfield name =  "upISBN" label = "Target ISBN"/>
-    	<!--<s:textfield name = "upTitle" label = "Title"/> -->
-    	<s:textfield name = "upAuthorID" label = "AuthorID"/>
-    	<s:textfield name = "upPub" label = "Publisher"/>
-    	<s:textfield name = "upPubDate" label = "Publish Date"/>
-    	<s:textfield name = "upPrice" label = "Price"/>
-    	<!-- 
-    	<s:radio name = "isUpAuthor" label = "Insert Author Info*" list = "{'Yes', 'No'}" />
-    	<s:textfield name = "upName" label = "AuthorName"/>
-    	<s:textfield name = "upAge" label = "Age"/>
-    	<s:textfield name = "upCountry" label = "Country"/>
-    	 -->
+    <s:form align = "CENTER" action = "UPDATE_QUERY" >
+    	 
+    	<s:textfield name = "upName" label = "New Name"/>
+    	<s:textfield name = "upAge" label = "New Age"/>
+    	<s:textfield name = "upPro" label = "New Profession"/>
+    	<s:textfield name = "upIns" label = "New Institution"/>
+    	<s:textfield name = "upLink" label = "New Link"/>
+    	 <!--
+    	<s:textfield name = "updateBuffer.getName()" label = "New Name"/>
+    	<s:textfield name = "upAge" label = "New Age"/>
+    	<s:textfield name = "updateBuffer.getProfession()" label = "New Profession"/>
+    	<s:textfield name = "updateBuffer.getInstitution()" label = "New Institution"/>
+    	<s:textfield name = "updateBuffer.getLink()" label = "New Link"/>
     	<s:submit />
+    	-->
+    	<s:submit value = "Update"/>
     </s:form> 
     <h5 align = "CENTER" > *Fill every blank to avoid error. </h5>
-    <s:form action = "DELETE_BOOK" >
+    <s:form action = "DELETE_QUERY" >
     	<s:submit value = "Delete Record " />
     </s:form>
     
-    <s:form action = "BACK_TO_SHOWRESULT" >
+    <s:form action = "BACK_TO_USERTREES" >
     	<s:submit value = "Backward" />
     </s:form>
-    <!-- 
-     <h6>  
-    	test <br> 
-    	1. <s:property value = "currentIndex" /> <br>
-    	2. <s:property value = "currentISBN" /> <br>
-    	3. <s:property value = "bookSR.get(currentIndex).Title" /> <br>
-    	4. <s:property value = "bookSR.size()" /> <br>
-    	5. <s:property value = "authorSR.Name" /> <br>
-    	6. <s:property value = "authorized" /> <br>
-    </h6>
-     -->
+   
   </body>
 </html>

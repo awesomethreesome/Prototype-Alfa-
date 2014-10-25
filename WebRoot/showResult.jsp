@@ -52,7 +52,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				</s:a> </td>
     		<td><s:property value = "#i.institution" /> </td>
     		<td><s:property value = "#i.profession"/> </td>
-    		<td><s:url id="descendURL" action="DESCEND_QUERY">
+    		<td><s:url id="descendURL" action="DESCEND_QUERY_IN_SEARCHING">
     				<s:param name = "chosenKey" value = "#i.key" />
     			</s:url>
 				<s:a href="%{desendURL}">
