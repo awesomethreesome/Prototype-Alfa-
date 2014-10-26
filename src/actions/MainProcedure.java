@@ -19,7 +19,7 @@ public class MainProcedure extends ActionSupport {
 	}
 	/////public methods 
 	
-	public String logInCheck() throws SQLException{
+	public String logInCheck() throws SQLException{//////////////////////////////////////////////////////////////
 		if ( inputPassword.equals(passWord) && inputUserName.equals(userName)){
 			authorized = true;
 			//search the user info 

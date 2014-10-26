@@ -247,7 +247,7 @@ public class DBManager {
 	
 	private final String userName = "root";
 	private final String passWord = "vorstellung";
-	private final String dbName = "R&R";
+	private final String dbName = "RandR";
 	private final String dbURL = "jdbc:mysql://localhost:3306/" + dbName;
 	private final String NodeTable = "node";
 	private final String userTable = "user";
