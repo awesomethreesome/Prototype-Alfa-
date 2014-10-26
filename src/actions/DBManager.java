@@ -216,21 +216,21 @@ public class DBManager {
 	/////public variables
 	
 
-    public static String SELECT_USER_SQL = "select * from user where username = ? and password = ?;";
+    public static String SELECT_USER_SQL = "select * from user where username = ? and upassword = ?;";
     public static String SELECT_ROOTNODE_SQL = "select * from node where userid = ? and father = ?;";
-    public static String SELECT_NODE_BY_NAME_SQL = "select * from node where name = ?;";
+    public static String SELECT_NODE_BY_NAME_SQL = "select * from node where nodename = ?;";
     public static String SELECT_NODE_BY_INS_SQL = "select * from node where institution = ?;";
     public static String SELECT_NODE_BY_PRO_SQL = "select * from node where profession = ?;";
     public static String SELECT_NODE_BY_FKEY_SQL = "select * from node where father = ?";
-    public static String UPDATE_NODE_SQL = "update node set name = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;";
-    public static String DELECT_NODE_BY_KEY_SQL = "delect from node where key = ?;";
-    public static String INSERT_NODE_SQL = "insert into node (useid, father, name, age, profession, institution, link) values(?,?,?,?,?,?,?);";
+    public static String UPDATE_NODE_SQL = "update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;";
+    public static String DELECT_NODE_BY_KEY_SQL = "delect from node where nodekey = ?;";
+    public static String INSERT_NODE_SQL = "insert into node (useid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?);";
 
 	public static String CREATE_NODETABLE_SQL = "create table node(" +
-			" key int not null auto_increment primary key , " +
+			" nodekey int not null auto_increment primary key , " +
 			" userid varchar(30) not null," +
 			" father int not null," +
-			" name varchar(40)," +
+			" nodename varchar(40)," +
 			" age int," +
 			" profession varchar(50)," +
             " institution varchar(30)," +
@@ -239,7 +239,7 @@ public class DBManager {
 	public static String CREATE_USERTABLE_SQL = "create table user(" +
 			"userid varchar(30) not null primary key, " +
 			"userName varchar(30) not null, " +
-			"password varchar(30), " +
+			"upassword varchar(30), " +
 			"rootlist varchar(100) " +
 			");";
 
