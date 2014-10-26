@@ -19,7 +19,7 @@ public class MainProcedure extends ActionSupport {
 	}
 	/////public methods 
 	
-	public String logInCheck(){
+	public String logInCheck() throws SQLException{
 		if ( inputPassword.equals(passWord) && inputUserName.equals(userName)){
 			authorized = true;
 			//search the user info 
@@ -35,7 +35,7 @@ public class MainProcedure extends ActionSupport {
 		return "UN_AUTHORIZED";
 	}
 	
-	public String manageQuery(){
+	public String manageQuery() throws SQLException{
 		ResultSet  temp = null; 
 		temp = dataBase.selectRootNodebyUserID( currentUser.getUserID() );
 		if ( temp == null ) {
@@ -48,7 +48,7 @@ public class MainProcedure extends ActionSupport {
 	
 	public String searchQuery() throws SQLException{
 		//queryType has 3 possible values{Name, Institution, Profession, }
-		ResultSet temp = null, temp_ = null;
+		ResultSet temp = null;
 		if ( queryType.equals("Name")  ) {
 			temp = dataBase.selectNodebyName(queryInput);		
 		}
@@ -59,15 +59,15 @@ public class MainProcedure extends ActionSupport {
 			temp = dataBase.selectNodebyPro(queryInput);
 		}
 		else {//default option is search by book title
-			temp = dataBase.selectBookbyName(queryInput);
+			temp = dataBase.selectNodebyName(queryInput);
 		}
 		transcribeNode( temp );//now all selected book have been stored in currentSons, which is a list of NodeRecord
 		
 		return "QUERY_DONE";
 	}
 	
-	
 	public String ascendQuery() {///////////////////////////////////////////////////////////////////////////
+		
 		
 		return "ASCEND_DONE";
 	}
@@ -78,7 +78,7 @@ public class MainProcedure extends ActionSupport {
 		return "QUERY_APPROVED"; 
 	}
 	
-	public String descendQuery() {
+	public String descendQuery() throws SQLException{
 		int index = findIndexofChosenNode();
 		//set the chosen node as new father
 		currentNode = new NodeRecord(currentSons.get(index));		
