@@ -145,12 +145,38 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	/////private methods
-	private void transcribeNode( ResultSet sr ) throws SQLException {//////////////////////////////////////////
-		
+	private void transcribeNode( ResultSet sr ) throws SQLException {
+		//clean old result
+		currentSons.clear();
+		currentSons = new ArrayList<NodeRecord>();
+		NodeRecord temp = null;
+		while ( sr.next() ) {
+			temp = new NodeRecord();
+			temp.setKey(sr.getInt(1));
+			temp.setUserID(sr.getString(2));
+			temp.setFather(sr.getInt(3));
+			temp.setName(sr.getString(4));
+			temp.setAge(sr.getInt(5));
+			temp.setProfession(sr.getString(6));
+			temp.setInstitution(sr.getString(7));
+			temp.setLink(sr.getString(8));
+			
+			currentSons.add(temp);
+			temp = null;
+		}
+		sr.beforeFirst();
+		//sr.close();
 	}
 	
 	private void transcribeUser( ResultSet sr ) throws SQLException{////////////////////////////////////////
-		
+		currentUser.clear();
+		while ( sr.next() ) {
+			 currentUser.setUserID(sr.getString(1));
+			 currentUser.setUserName(sr.getString(2));
+			 currentUser.setPassword(sr.getString(3));
+			 currentUser.setRootList(sr.getString(4));
+		}
+		sr.beforeFirst();
 	}
 	
 	private int findIndexofChosenNode(){
@@ -177,7 +203,7 @@ public class MainProcedure extends ActionSupport {
 
 	public static int INT_INVALID = -1;
 	public static double DOUBLE_INVALID = -1.0;
-	public static String ROOT_STAGE = "end of the line";
+	public static int ROOT_STAGE = -1;
 	public static String SEARCHING_STAGE = "on searching";
 	/////private variables
 	private DBManager dataBase = new DBManager();//

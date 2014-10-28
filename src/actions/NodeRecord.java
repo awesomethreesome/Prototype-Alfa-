@@ -10,7 +10,6 @@ public class NodeRecord {
 		// TODO Auto-generated constructor stub
 		key = nodeRecord.getKey();
 		userID = new String(nodeRecord.getUserID());
-		father = new String(nodeRecord.getFather());
 		son = new String(nodeRecord.getSon());
 		name = new String(nodeRecord.getName());
 		age = nodeRecord.getAge();
@@ -22,7 +21,7 @@ public class NodeRecord {
 	public void clear(){
 		key = INT_INVALID;
 		userID = STRING_INVALID;
-		father = STRING_INVALID;
+		father = INT_INVALID;
 		son = STRING_INVALID;
 		name = STRING_INVALID;
 		age = INT_INVALID;
@@ -36,7 +35,7 @@ public class NodeRecord {
 	
 	private int key;
 	private String userID;
-	private String father;
+	private int father;
 	private String son;
 	private String name;
 	private int age;
@@ -60,11 +59,11 @@ public class NodeRecord {
 		this.userID = userID;
 	}
 
-	public String getFather() {
+	public int getFather() {
 		return father;
 	}
 
-	public void setFather(String father) {
+	public void setFather(int father) {
 		this.father = father;
 	}
 
