@@ -19,7 +19,7 @@ public class MainProcedure extends ActionSupport {
 	}
 	//empty constructor
 	public MainProcedure(){
-		System.out.println("create an instance");
+		//System.out.println("create an instance");
 	}
 	/////public methods 
 	
@@ -35,7 +35,8 @@ public class MainProcedure extends ActionSupport {
 				authorized = false;
 				return "UN_AUTHORIZED";
 			}
-			transcribeUser( temp );//current user info has be loaded into currentUser 
+			transcribeUser( temp );//current user info has be loaded into currentUser
+			System.out.println("currentUser info: "+currentUser.getUserID() + " "+ currentUser.getRootList()); 
 			return "AUTHORIZED";
 		}
 		authorized = false;
@@ -81,17 +82,23 @@ public class MainProcedure extends ActionSupport {
 	
 	public String detailQuery() {
 		int index = findIndexofChosenNode();
-		setDetailBuffer(new NodeRecord(currentSons.get(index)));
+		System.out.println("chosen index:" + index);
+		NodeRecord temp = currentSons.get(index);
+		System.out.println("temp:" + temp.getName() + " " + temp.getUserID());
+		setDetailBuffer( temp );
+		System.out.println("detailbuffer:" + detailBuffer.getName() + " " + detailBuffer.getUserID());
 		return "QUERY_APPROVED"; 
 	}
 	
 	public String descendQuery() throws SQLException{
 		int index = findIndexofChosenNode();
+		System.out.println("descend index:" + index);
 		//set the chosen node as new father
-		currentNode = new NodeRecord(currentSons.get(index));		
+		currentNode = currentSons.get(index);		
 		//search sons of currentNode	
 		ResultSet temp = dataBase.selectNodebyFatherKey( currentNode.getKey() );
 		transcribeNode( temp );//now the new sons has been loaded into currentSons
+		//System.out.println("descend node:" +currentSons.size());
 		return "DESCEND_DONE";
 	}
 	
@@ -113,7 +120,10 @@ public class MainProcedure extends ActionSupport {
 	
 	
 	public String updateQuery() {
-		if ( dataBase.updateNode(chosenKey, upName, upAge, upPro, upIns, upLink) == true ) {
+		System.out.println("Update: "+ chosenKey+" "+upName+" "+upAge+" "+upPro+" "+upIns+" "+upLink);
+		boolean flag =  dataBase.updateNode(chosenKey, upName, upAge, upPro, upIns, upLink);
+		
+		if ( flag == true ) {
 			cleanUpdateBuffer();
 			return "UPDATE_DONE";
 		}
@@ -121,10 +131,18 @@ public class MainProcedure extends ActionSupport {
 		return "ERROR";
 	}
 	
+	public String errorRecover(){///////////////////////////////////////////////////////////////////
+		
+		return "TURN_BACK";
+	}
+	
 	public String deleteQuery() {
 		int index = findIndexofChosenNode();
+		System.out.println("delete index: "+ index);
 		if ( index < 0 || index > currentSons.size() )
 			return "ERROR";
+		
+		System.out.println("chosenkey and name :" + chosenKey + currentSons.get(index).getName());
 		if ( dataBase.deleteNode(chosenKey) == true ) { 
 			return "DELETE_DONE";
 		}
@@ -135,6 +153,7 @@ public class MainProcedure extends ActionSupport {
 		boolean flag;
 		//insert new node
 		//notice that the Key of this new node is automatically gennerated by the database and it's unique
+		System.out.println("to add:"+" "+currentUser.getUserID()+" "+currentNode.getKey()+" "+upName+" "+upAge+" "+upPro+" "+upIns+" "+upLink);
 		flag = dataBase.insertNode(currentUser.getUserID(), currentNode.getKey(), upName, upAge, upPro, upIns, upLink); 
 		if ( flag == false ) {
 			cleanUpdateBuffer();

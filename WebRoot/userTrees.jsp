@@ -24,7 +24,10 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   </head>
   
   <body>
-    <h1 align = "CENTER">Search Result :</h1> <br>
+    <h1 align = "CENTER">Result :</h1> <br>
+    <s:form action = "ADD_NODE" >
+    	<s:submit value = "Add node in current level"/>
+    </s:form>
     <!-- we need a table here to display our result -->
     <table border = 1, align = "CENTER" >
     	<!-- the head of the table -->
@@ -33,12 +36,14 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     		<td> Institution </td>
     		<td> Profession </td>
     		<td> Edit </td>
+    		<td> Delete </td>
+    		<td> Ascend</td>
     		<td> Descend </td>
     	</tr>
     <s:iterator value = "currentSons" id = "i" status = "struts" >
     	<!-- the solid content -->
     	<tr>
-    		<td><s:url id="detailURL" action="DETAIL_QUERY_IN_SEARCHING">
+    		<td><s:url id="detailURL" action="DETAIL_QUERY">
     				<s:param name = "chosenKey" value = "#i.key" /> 
     			</s:url>
 				<s:a href="%{detailURL}">
@@ -46,16 +51,28 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
 				</s:a> </td>
     		<td><s:property value = "#i.institution" /> </td>
     		<td><s:property value = "#i.profession"/> </td>
-    		<td><s:url id="edutURL" action="EDIT_QUERY">
+    		<td><s:url id="editURL" action="EDIT_QUERY">
     				<s:param name = "chosenKey" value = "#i.key" /> 
     			</s:url>
 				<s:a href="%{editURL}">
 					EDIT
-			</s:a> </td>
+				</s:a> </td>
+			<td><s:url id="deleteURL" action="DELETE_QUERY">
+    				<s:param name = "chosenKey" value = "#i.key" /> 
+    			</s:url>
+				<s:a href="%{deleteURL}">
+					DELETE
+				</s:a> </td>
+			<td><s:url id="ascendURL" action="ASCEND_QUERY">
+    				<s:param name = "chosenKey" value = "#i.key" />
+    			</s:url>
+				<s:a href="%{ascendURL}">
+					ASCEND
+				</s:a> </td>
     		<td><s:url id="descendURL" action="DESCEND_QUERY">
     				<s:param name = "chosenKey" value = "#i.key" />
     			</s:url>
-				<s:a href="%{desendURL}">
+				<s:a href="%{descendURL}">
 					DESCEND
 				</s:a> </td>
     	</tr>

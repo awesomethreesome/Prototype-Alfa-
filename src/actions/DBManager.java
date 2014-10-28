@@ -108,17 +108,18 @@ public class DBManager {
     public boolean updateNode( int chosenKey, String upName, int upAge, String upPro, String upIns, String upLink ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_SQL);
-			ps.setInt(1, chosenKey);
-            ps.setString(2, upName);
-            ps.setInt(3, upAge);
-            ps.setString(4, upPro);
-            ps.setString(5, upIns);
-            ps.setString(6, upLink);
+			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
+            ps.setString(1, upName);
+            ps.setInt(2, upAge);
+            ps.setString(3, upPro);
+            ps.setString(4, upIns);
+            ps.setString(5, upLink);
+            ps.setInt(6, chosenKey);
 			
             ps.executeUpdate();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to update.");
 			return false;
 		}
 		return true;
@@ -126,7 +127,9 @@ public class DBManager {
 
     public boolean deleteNode( int key ){
         try{
+        	
 			PreparedStatement ps = dbConnection.prepareStatement(DELECT_NODE_BY_KEY_SQL);
+			//delect from node where nodekey = ?;
 			ps.setInt(1, key);
 			ps.executeUpdate();
 
@@ -140,13 +143,15 @@ public class DBManager {
     public boolean insertNode( String userID, int father, String upName, int upAge, String upPro, String upIns, String upLink){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(INSERT_NODE_SQL);
-            ps.setString(1, userID);
-            ps.setInt(2, father);
-            ps.setString(3, upName);
-            ps.setInt(4, upAge);
-            ps.setString(5, upPro);
-            ps.setString(6, upIns);
-            ps.setString(7, upLink);
+			//insert into node (nodekey, userid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?);
+			ps.setInt(1, 0);
+            ps.setString(2, userID);
+            ps.setInt(3, father);
+            ps.setString(4, upName);
+            ps.setInt(5, upAge);
+            ps.setString(6, upPro);
+            ps.setString(7, upIns);
+            ps.setString(8, upLink);
 			
             ps.executeUpdate();
 
@@ -216,15 +221,15 @@ public class DBManager {
 	/////public variables
 	
 
-    public static String SELECT_USER_SQL = "select * from user where username = ? and upassword = ?;";
+    public static String SELECT_USER_SQL = "select * from user where userid = ? and upassword = ?;";
     public static String SELECT_ROOTNODE_SQL = "select * from node where userid = ? and father = ?;";
     public static String SELECT_NODE_BY_NAME_SQL = "select * from node where nodename = ?;";
     public static String SELECT_NODE_BY_INS_SQL = "select * from node where institution = ?;";
     public static String SELECT_NODE_BY_PRO_SQL = "select * from node where profession = ?;";
     public static String SELECT_NODE_BY_FKEY_SQL = "select * from node where father = ?";
-    public static String UPDATE_NODE_SQL = "update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;";
-    public static String DELECT_NODE_BY_KEY_SQL = "delect from node where nodekey = ?;";
-    public static String INSERT_NODE_SQL = "insert into node (useid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?);";
+    public static String UPDATE_NODE_SQL = "update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where nodekey = ?;";
+    public static String DELECT_NODE_BY_KEY_SQL = "delete from node where nodekey = ?;";
+    public static String INSERT_NODE_SQL = "insert into node (nodekey, userid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?);";
 
 	public static String CREATE_NODETABLE_SQL = "create table node(" +
 			" nodekey int not null auto_increment primary key , " +

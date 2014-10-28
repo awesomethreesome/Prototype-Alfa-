@@ -44,9 +44,6 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     	<s:submit value = "Update"/>
     </s:form> 
     <h5 align = "CENTER" > *Fill every blank to avoid error. </h5>
-    <s:form action = "DELETE_QUERY" >
-    	<s:submit value = "Delete Record " />
-    </s:form>
     
     <s:form action = "BACK_TO_USERTREES" >
     	<s:submit value = "Backward" />

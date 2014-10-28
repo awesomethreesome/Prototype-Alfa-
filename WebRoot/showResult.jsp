@@ -41,7 +41,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     		<td><s:url id="ascendURL" action="ASCEND_QUERY">
     				<s:param name = "chosenKey" value = "#i.key" /> 
     			</s:url>
-				<s:a href="%{asendURL}">
+				<s:a href="%{ascendURL}">
 					ASCEND
 				</s:a> </td>
     		<td><s:url id="detailURL" action="DETAIL_QUERY_IN_SEARCHING">
@@ -55,7 +55,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     		<td><s:url id="descendURL" action="DESCEND_QUERY_IN_SEARCHING">
     				<s:param name = "chosenKey" value = "#i.key" />
     			</s:url>
-				<s:a href="%{desendURL}">
+				<s:a href="%{descendURL}">
 					DESCEND
 				</s:a> </td>
     	</tr>

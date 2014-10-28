@@ -48,11 +48,18 @@
 				<result name = "ERROR" >/errorPage.jsp </result>
 			</action>
 			<action name = "DESCEND_QUERY" class = "actions.MainProcedure" method = "descendQuery">
-				<result name = "DESCEND_DONE">/userTress.jsp</result>
+				<result name = "DESCEND_DONE">/userTrees.jsp</result>
 				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
 			<action name = "EDIT_QUERY" class = "actions.MainProcedure" method = "editQuery">
 				<result name = "QUERY_DONE">/edit.jsp</result> 
+			</action>
+			<action name = "ADD_NODE" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED">/addNode.jsp</result>
+			</action>
+			<action name = "DELETE_QUERY" class = "actions.MainProcedure" method = "deleteQuery">
+				<result name = "DELETE_DONE">/userTrees.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
 			
 		<!-- in userDetail.jsp -->
@@ -63,10 +70,6 @@
 		<!-- in edit.jsp -->
 			<action name = "UPDATE_QUERY" class = "actions.MainProcedure" method = "updateQuery">
 				<result name = "UPDATE_DONE">/edit.jsp </result>
-				<result name = "ERROR">/errorPage.jsp</result>
-			</action>
-			<action name = "DELETE_QUERY" class = "actions.MainProcedure" method = "deleteQuery">
-				<result name = "DELETE_DONE">/userTrees.jsp</result>
 				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
 			
