@@ -26,7 +26,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     
     <s:form align = "CENTER" action = "SEARCH_QUERY">
     	<s:textfield name = "queryInput" align = "CENTER" />
-    	<s:radio name = "queryType" label = "Search Option*" list = "{'Name', 'Institution', 'Profession', 'N\A'}"/>
+    	<s:radio name = "queryType" label = "Search Option*" list = "{'Name', 'Institution', 'Profession', 'NA'}"/>
     	<s:submit value = "Search" align = "CENTER"/>
     </s:form>
      

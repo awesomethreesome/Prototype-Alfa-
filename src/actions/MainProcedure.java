@@ -17,10 +17,17 @@ public class MainProcedure extends ActionSupport {
 	public static void main( String[] args ) {
 		MainProcedure test_case = new MainProcedure();
 	}
+	//empty constructor
+	public MainProcedure(){
+		System.out.println("create an instance");
+	}
 	/////public methods 
 	
+	
 	public String logInCheck() throws SQLException{//////////////////////////////////////////////////////////////
-		if ( inputPassword.equals(passWord) && inputUserName.equals(userName)){
+		System.out.println(inputPassword + " " + inputUserName);
+		if ( passWord.equals(inputPassword) && userName.equals(inputUserName)){
+			
 			authorized = true;
 			//search the user info 
 			ResultSet temp = dataBase.selectUser( userName ,  inputPassword );
@@ -185,95 +192,74 @@ public class MainProcedure extends ActionSupport {
 	private static NodeRecord detailBuffer = new NodeRecord();//store the node whose detail is to be displayed
 	
 	private static String queryInput, queryType;//queryType has 3 possible values{Name, Institution, Profession, }
-	private static String inputPassword, inputUserName;
+	//private static String inputPassword = new String(), inputUserName = new String();
+	private static String inputPassword = "vorstellung", inputUserName = "wille";
 	
 	private static NodeRecord updateBuffer = new NodeRecord(); 
 	private String upName, upPro, upIns, upLink;
-	private int upAge;  
+	private int upAge;
 	
 	
 	/////all setters and getters
-	public static int getChosenKey() {
+	public int getChosenKey() {
 		return chosenKey;
 	}
 
-	public static void setChosenKey(int chosenKey) {
+	public void setChosenKey(int chosenKey) {
 		MainProcedure.chosenKey = chosenKey;
 	}
 
-	public static List<NodeRecord> getCurrentSons() {
+	public List<NodeRecord> getCurrentSons() {
 		return currentSons;
 	}
 
-	public static void setCurrentSons(List<NodeRecord> currentSons) {
+	public void setCurrentSons(List<NodeRecord> currentSons) {
 		MainProcedure.currentSons = currentSons;
 	}
 
-	public static NodeRecord getCurrentNode() {
+	public NodeRecord getCurrentNode() {
 		return currentNode;
 	}
 
-	public static void setCurrentNode(NodeRecord currentNode) {
+	public void setCurrentNode(NodeRecord currentNode) {
 		MainProcedure.currentNode = currentNode;
 	}
 
-	public static UserRecord getCurrentUser() {
+	public UserRecord getCurrentUser() {
 		return currentUser;
 	}
 
-	public static void setCurrentUser(UserRecord currentUser) {
+	public void setCurrentUser(UserRecord currentUser) {
 		MainProcedure.currentUser = currentUser;
 	}
 
-	public static String getQueryInput() {
+	public String getQueryInput() {
 		return queryInput;
 	}
 
-	public static void setQueryInput(String queryInput) {
+	public void setQueryInput(String queryInput) {
 		MainProcedure.queryInput = queryInput;
 	}
 
-	public static String getQueryType() {
-		return queryType;
-	}
-
-	public static void setQueryType(String queryType) {
-		MainProcedure.queryType = queryType;
-	}
-
-	public static String getInputPassword() {
-		return inputPassword;
-	}
-
-	public static void setInputPassword(String inputPassword) {
-		MainProcedure.inputPassword = inputPassword;
-	}
-
-	public static String getInputUserName() {
-		return inputUserName;
-	}
-
-	public static void setInputUserName(String inputUserName) {
-		MainProcedure.inputUserName = inputUserName;
-	}
-
-	public static long getSerialversionuid() {
+	
+	
+	public long getSerialversionuid() {
 		return serialVersionUID;
 	}
 
-	public static NodeRecord getDetailBuffer() {
+	public NodeRecord getDetailBuffer() {
 		return detailBuffer;
 	}
 
-	public static void setDetailBuffer(NodeRecord detailBuffer) {
+	public void setDetailBuffer(NodeRecord detailBuffer) {
 		MainProcedure.detailBuffer = detailBuffer;
 	}
 
-	public static NodeRecord getUpdateBuffer() {
+	public NodeRecord getUpdateBuffer() {
 		return updateBuffer;
 	}
 
-	public static void setUpdateBuffer(NodeRecord updateBuffer) {
+	public void setUpdateBuffer(NodeRecord updateBuffer) {
 		MainProcedure.updateBuffer = updateBuffer;
 	}
 
@@ -307,6 +293,30 @@ public class MainProcedure extends ActionSupport {
 
 	public void setUpLink(String upLink) {
 		this.upLink = upLink;
+	}
+
+	public String getQueryType() {
+		return queryType;
+	}
+
+	public void setQueryType(String queryType) {
+		MainProcedure.queryType = queryType;
+	}
+
+	public String getInputPassword() {
+		return inputPassword;
+	}
+
+	public void setInputPassword(String inputPassword) {
+		MainProcedure.inputPassword = inputPassword;
+	}
+
+	public String getInputUserName() {
+		return inputUserName;
+	}
+
+	public void setInputUserName(String inputUserName) {
+		MainProcedure.inputUserName = inputUserName;
 	}
 
 	public int getUpAge() {
