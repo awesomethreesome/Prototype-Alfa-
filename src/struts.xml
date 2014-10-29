@@ -16,6 +16,9 @@
 				<result name = "QUERY_DONE">/userTrees.jsp</result>
 				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
+			<action name = "MANAGE_QUERY_ADUI" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED">/tree.jsp</result>
+			</action>
 		<!-- //////////////////////////////the searching routine below //////////////////////////////////////////-->
 		<!-- in showResult.jsp -->
 			<action name = "ASCEND_QUERY" class = "actions.MainProcedure" method = "ascendQuery">
