@@ -23,7 +23,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   </head>
   
   <body>
-    <jsp:useBean id="recordsegment" class="MyPack.HistorySegment" scope="session"/>
+    <jsp:useBean id="recordsegment" class="MyPack.HistorySegment" scope="application"/>
     <jsp:getProperty property="table" name="recordsegment"/>
   </body>
 </html>

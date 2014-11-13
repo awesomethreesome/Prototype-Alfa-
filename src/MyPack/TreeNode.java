@@ -32,7 +32,6 @@ public class TreeNode {
 		return name;
 	}
 	public void setName(String name) {
-		System.out.println("name set");
 		this.name = name;
 	}
 	public TreeNode copy() {

@@ -22,7 +22,7 @@ if(opid==null) opid="1";
     <script type="text/javascript" src="dtree.js"></script>
   </head>
   <body>
-  	<jsp:useBean id="recordsegment" class="MyPack.HistorySegment" scope="session"/>
+  	<jsp:useBean id="recordsegment" class="MyPack.HistorySegment" scope="application"/>
   	<script type="text/javascript">
   	tree = new dTree('tree');
   	<%

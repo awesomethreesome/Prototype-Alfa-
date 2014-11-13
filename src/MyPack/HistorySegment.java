@@ -16,6 +16,7 @@ public class HistorySegment {
 		ob_node_id.add("1");
 	}
 	public ArrayList<TreeNode> getTree(String operation_id) {
+		System.out.println("size of segment is "+String.valueOf(records.size()));
 		int opid = Integer.parseInt(operation_id) - 1;
 		ArrayList<TreeNode> ret = new ArrayList<TreeNode>();
 		for(int i=0; i<records.get(opid).size();i++)
