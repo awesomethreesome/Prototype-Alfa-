@@ -26,26 +26,20 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
     
     <s:form align = "CENTER" action = "SEARCH_QUERY">
     	<s:textfield name = "queryInput" align = "CENTER" />
-    	<s:radio name = "queryType" label = "Search Option*" list = "{'Name', 'Institution', 'Profession', 'N\A'}"/>
-    	<s:submit align = "CENTER"/>
+    	<s:radio name = "queryType" label = "Search Option*" list = "{'Name', 'Institution', 'Profession', 'NA'}"/>
+    	<s:submit value = "Search" align = "CENTER"/>
     </s:form>
      
   	<s:form action = "MANAGE_QUERY" align = "CENTER">
   		<s:submit value = "My Trees"  />
   	</s:form>
-     
-     
+  	<!-- 
+    <s:form action = "MANAGE_QUERY_ADUI" align = "CENTER">
+  		<s:submit value = "My Trees"  />
+  	</s:form>
+  	 --> 
+    <a href="tree.jsp">check the tree</a>
     <h6 align = "CENTER" > Edition 1.0</h6> <br>
-    <!-- 
-    <h6>  
-    	test <br> 
-    	1. <s:property value = "currentIndex" /> <br>
-    	2. <s:property value = "currentISBN" /> <br>
-    	3. <s:property value = "bookSR.get(currentIndex).Title" /> <br>
-    	4. <s:property value = "bookSR.size()" /> <br>
-    	5. <s:property value = "authorSR.Name" /> <br>
-    	6. <s:property value = "authorized" /> <br>
-    </h6>
-     -->
+    
   </body>
 </html>

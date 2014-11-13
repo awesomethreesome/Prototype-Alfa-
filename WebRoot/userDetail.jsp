@@ -10,7 +10,7 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   <head>
     <base href="<%=basePath%>">
     
-    <title> BMS record detail page</title>
+    <title>R-R detail page</title>
     
 	<meta http-equiv="pragma" content="no-cache">
 	<meta http-equiv="cache-control" content="no-cache">
@@ -24,60 +24,30 @@ String basePath = request.getScheme()+"://"+request.getServerName()+":"+request.
   </head>
   
   <body>
-    <h1 align = "CENTER"> Detail Information  of Chosen Book</h1> <br>
+    <h1 align = "CENTER"> Detail Information of Chosen Node</h1> <br>
     
     <table border = 1, align = "CENTER" >
     	<!-- the head of the table -->
     	<tr>
-    		<td> ISBN </td>
-    		<td> Title </td>
-    		<td> AuthorID </td>
-    		<td> Author </td>
-    		<td> Publisher </td>
-    		<td> PublishDate </td>
-    		<td> Price </td>
-    	</tr>
-    	<!-- solid info -->
-    	<tr>
-    		<td> <s:property value = "currentBook.ISBN" /> </td>
-    		<td> <s:property value = "currentBook.Title" /> </td>
-    		<td> <s:property value = "currentBook.AuthorID" /> </td>
-    		<td> <s:property value = "authorSR.Name" /> </td>
-    		<td> <s:property value = "currentBook.Publisher" /> </td>
-    		<td> <s:property value = "currentBook.PublishDate" /> </td>
-    		<td> <s:property value = "currentBook.Price" /> </td>
-    	</tr>
-    </table>
-    <h3 align = "CENTER" > Author Information </h3>
-    <table border = 1, align = "CENTER" >
-    	<!-- the head of the table -->
-    	<tr>
-    		<td> AuthorID </td>
     		<td> Name </td>
     		<td> Age </td>
-    		<td> Country </td>
+    		<td> Profession </td>
+    		<td> Institution </td>
+    		<td> Link </td>
     	</tr>
     	<!-- solid info -->
     	<tr>
-    		<td> <s:property value = "authorSR.AuthorID" /> </td>
-    		<td> <s:property value = "authorSR.Name" /> </td>
-    		<td> <s:property value = "authorSR.Age" /> </td>
-    		<td> <s:property value = "authorSR.Country" /> </td>
+    		<td> <s:property value = "detailBuffer.name" /> </td>
+    		<td> <s:property value = "detailBuffer.age" /> </td>
+    		<td> <s:property value = "detailBuffer.profession" /> </td>
+    		<td> <s:property value = "detailBuffer.Institution" /> </td>
+    		<td> <s:property value = "detailBuffer.link" /> </td>
     	</tr>
-    </table>
-    <s:form action = "BACK_TO_SHOWRESULT" >
+    </table>   
+    
+    <s:form action = "BACK_TO_USERTREES" >
     	<s:submit value = "Backward" />
     </s:form>
-	<!--     
-     <h6>  
-    	test <br> 
-    	1. <s:property value = "currentIndex" /> <br>
-    	2. <s:property value = "currentISBN" /> <br>
-    	3. <s:property value = "bookSR.get(currentIndex).Title" /> <br>
-    	4. <s:property value = "bookSR.size()" /> <br>
-    	5. <s:property value = "authorSR.Name" /> <br>
-    	6. <s:property value = "authorized" /> <br>
-    </h6>
-     -->
+    
   </body>
 </html>

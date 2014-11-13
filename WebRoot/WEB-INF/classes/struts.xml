@@ -16,60 +16,72 @@
 				<result name = "QUERY_DONE">/userTrees.jsp</result>
 				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
-		
-		<!-- in showResult.jsp -->
-			<action name = "EDIT_RECORD" class = "actions.MainProcedure" method = "editQuery">
-				<result name = "EDIT_AUTHORIZED">/edit.jsp</result>
-				<result name = "EDIT_UNAUTHORIZED">/errorPage.jsp</result>
+			<action name = "MANAGE_QUERY_ADUI" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED">/tree.jsp</result>
 			</action>
-			<action name = "SHOW_DETAIL" class = "actions.MainProcedure" method = "detailQuery">
-				<result name = "QUERY_APPROVED">/detail.jsp</result>
+		<!-- //////////////////////////////the searching routine below //////////////////////////////////////////-->
+		<!-- in showResult.jsp -->
+			<action name = "ASCEND_QUERY" class = "actions.MainProcedure" method = "ascendQuery">
+				<result name = "ASCEND_DONE">/showResult.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
+			</action>
+			<action name = "DETAIL_QUERY_IN_SEARCHING" class = "actions.MainProcedure" method = "detailQuery">
+				<result name = "QUERY_APPROVED">/searchDetail.jsp</result>
 				<result name = "ERROR" >/errorPage.jsp </result>
 			</action>
-			<action name = "BACK_TO_START" class = "actions.MainProcedure" method = "adminSwitch">
-				<result name = "SWITCH_APPROVED" >/index.jsp </result>
-				<result name = "ADMIN_SWITCH_APPROVED">/AdminIndex.jsp </result>
+			<action name = "DESCEND_QUERY_IN_SEARCHING" class = "actions.MainProcedure" method = "descendQuery">
+				<result name = "DESCEND_DONE">/showResult.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
-			
-			
-		<!-- in userTrees.jsp -->
-		 
+			<action name = "BACK_TO_START" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED" >/index.jsp </result>
+			</action>
+	 	
 		<!-- in searchDetail.jsp -->
+			<action name = "IMPORT_NODE" class = "actions.MainProcedure" method = "importNode">
+				<result name = "IMPORT_DONE">/searchDetail.jsp</result>		
+			</action>
 			<action name = "BACK_TO_SHOWRESULT" class = "actions.MainProcedure" method = "blankSwitch">
 				<result name = "SWITCH_APPROVED" >/showResult.jsp </result>
 			</action>
+		<!-- //////////////////////////////the management routine below //////////////////////////////////////////-->
+		<!-- in userTrees.jsp -->
+			<action name = "DETAIL_QUERY" class = "actions.MainProcedure" method = "detailQuery">
+				<result name = "QUERY_APPROVED">/userDetail.jsp</result>
+				<result name = "ERROR" >/errorPage.jsp </result>
+			</action>
+			<action name = "DESCEND_QUERY" class = "actions.MainProcedure" method = "descendQuery">
+				<result name = "DESCEND_DONE">/userTrees.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
+			</action>
+			<action name = "EDIT_QUERY" class = "actions.MainProcedure" method = "editQuery">
+				<result name = "QUERY_DONE">/edit.jsp</result> 
+			</action>
+			<action name = "ADD_NODE" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED">/addNode.jsp</result>
+			</action>
+			<action name = "DELETE_QUERY" class = "actions.MainProcedure" method = "deleteQuery">
+				<result name = "DELETE_DONE">/userTrees.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
+			</action>
 			
 		<!-- in userDetail.jsp -->
-		
-		
-		<!-- in node.jsp -->
-		
-		
+			<action name = "BACK_TO_USERTREES" class = "actions.MainProcedure" method = "blankSwitch">
+				<result name = "SWITCH_APPROVED" >/userTrees.jsp </result>
+			</action>
 		
 		<!-- in edit.jsp -->
-			<action name = "UPDATE_BOOK" class = "actions.MainProcedure" method = "updateBook">
-				<result name = "UPDATE_DONE">/edit.jsp</result>
+			<action name = "UPDATE_QUERY" class = "actions.MainProcedure" method = "updateQuery">
+				<result name = "UPDATE_DONE">/edit.jsp </result>
 				<result name = "ERROR">/errorPage.jsp</result>
 			</action>
-			<action name = "DELETE_BOOK" class = "actions.MainProcedure" method = "deleteBook">
-				<result name = "DELETE_DONE">/edit.jsp</result>
-				<result name = "ERROR">/errorPage.jsp</result>
-			</action>
-		
+			
 		<!-- in addNode.jsp -->
-		
-		
-		
-		<!-- (optional) in AdminIndex.jsp  -->
-		<!--	
-			<action name = "INSERT_RECORD" class = "actions.MainProcedure" method = "insertRecord">
-					<result name = "INSERT_DONE">/AdminIndex.jsp</result>
-					<result name = "ERROR">/errorPage.jsp</result>
-			</action>
-			<action name = "LOG_OUT" class = "actions.MainProcedure" method = "logOut">
-				<result name = "LOGOUT_DONE">/index.jsp</result>
-			</action>
-		-->	
+			<action name = "ADD_QUERY" class = "actions.MainProcedure" method = "addQuery">
+				<result name = "ADD_DONE">/addNode.jsp</result>
+				<result name = "ERROR">/errorPage.jsp</result>
+			</action> 
+			
 		<!-- in errorPage.jsp -->
 			<action name = "ERROR_RECOVER" class = "actions.MainProcedure" method = "errorRecover">
 				<result name = "TURN_BACK">/welcome.jsp</result>

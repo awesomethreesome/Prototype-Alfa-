@@ -6,6 +6,15 @@ public class UserRecord {
 		
 	}
 	
+	
+	//clean
+	public void clear(){
+		userID = STRING_INVALID;
+		userName = STRING_INVALID;;
+		password = STRING_INVALID;
+		rootList = STRING_INVALID;
+	}
+	
 	public String getUserID() {
 		return userID;
 	}
@@ -30,6 +39,8 @@ public class UserRecord {
 	public void setRootList(String rootList) {
 		this.rootList = rootList;
 	}
+	
+	public static String STRING_INVALID = "end of the line";
 	
 	private String userID;
 	private String userName;
