@@ -19,12 +19,12 @@ public class NodeRecord {
 	}
 
 	public void clear(){
-		key = INT_INVALID;
+		key = STRING_INVALID;
 		userID = STRING_INVALID;
-		father = INT_INVALID;
+		father = STRING_INVALID;
 		son = STRING_INVALID;
 		name = STRING_INVALID;
-		age = INT_INVALID;
+		age = STRING_INVALID;
 		profession = STRING_INVALID;
 		institution = STRING_INVALID;
 		link = STRING_INVALID;
@@ -33,21 +33,21 @@ public class NodeRecord {
 	public static int INT_INVALID = -1;
 	public static String STRING_INVALID = "";
 	
-	private int key;
+	private String key;
 	private String userID;
-	private int father;
+	private String father;
 	private String son;
 	private String name;
-	private int age;
+	private String age;
 	private String profession;
 	private String institution;
 	private String link;//this suppose to be an valid URL
 	
-	public int getKey() {
+	public String getKey() {
 		return key;
 	}
 	
-	public void setKey(int key) {
+	public void setKey(String key) {
 		this.key = key;
 	}
 	
@@ -59,11 +59,11 @@ public class NodeRecord {
 		this.userID = userID;
 	}
 
-	public int getFather() {
+	public String getFather() {
 		return father;
 	}
 
-	public void setFather(int father) {
+	public void setFather(String father) {
 		this.father = father;
 	}
 
@@ -83,11 +83,11 @@ public class NodeRecord {
 		this.name = name;
 	}
 
-	public int getAge() {
+	public String getAge() {
 		return age;
 	}
 
-	public void setAge(int age) {
+	public void setAge(String age) {
 		this.age = age;
 	}
 

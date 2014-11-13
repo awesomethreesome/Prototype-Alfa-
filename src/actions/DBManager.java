@@ -91,10 +91,10 @@ public class DBManager {
 
     }
 
-    public final ResultSet selectNodebyFatherKey(int fKey){
+    public final ResultSet selectNodebyFatherKey(String fKey){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(SELECT_NODE_BY_FKEY_SQL);
-			ps.setInt(1, fKey);
+			ps.setString(1, fKey);
 			
             result = ps.executeQuery();
 
@@ -105,16 +105,48 @@ public class DBManager {
 		return result;
     }
 
-    public boolean updateNode( int chosenKey, String upName, int upAge, String upPro, String upIns, String upLink ){
+    public boolean updateNode( int chosenKey, String upName, String upAge, String upPro, String upIns, String upLink ){
         try{
-			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_SQL);
+			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_INFO_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
             ps.setString(1, upName);
-            ps.setInt(2, upAge);
+            ps.setString(2, upAge);
             ps.setString(3, upPro);
             ps.setString(4, upIns);
             ps.setString(5, upLink);
             ps.setInt(6, chosenKey);
+			
+            ps.executeUpdate();
+
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to update.");
+			return false;
+		}
+		return true;
+    }
+    
+    public boolean updateNodeFather( int chosenKey, String father ){
+        try{
+			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_FATHER_SQL);
+			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
+            ps.setString(1, father);
+            ps.setInt(2, chosenKey);
+			
+            ps.executeUpdate();
+
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to update.");
+			return false;
+		}
+		return true;
+    }
+
+    public boolean updateNodeSon( int chosenKey, String son ){
+        try{
+			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_SON_SQL);
+			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
+            ps.setString(1, son);
+            ps.setInt(2, chosenKey);
 			
             ps.executeUpdate();
 
@@ -140,18 +172,19 @@ public class DBManager {
 		return true;
     }    
 
-    public boolean insertNode( String userID, int father, String upName, int upAge, String upPro, String upIns, String upLink){
+    public boolean insertNode( int key, String userID, String father, String son, String upName, String upAge, String upPro, String upIns, String upLink){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(INSERT_NODE_SQL);
 			//insert into node (nodekey, userid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?);
-			ps.setInt(1, 0);
+			ps.setInt(1, key);
             ps.setString(2, userID);
-            ps.setInt(3, father);
-            ps.setString(4, upName);
-            ps.setInt(5, upAge);
-            ps.setString(6, upPro);
-            ps.setString(7, upIns);
-            ps.setString(8, upLink);
+            ps.setString(3, father);
+            ps.setString(4, son);
+            ps.setString(5, upName);
+            ps.setString(6, upAge);
+            ps.setString(7, upPro);
+            ps.setString(8, upIns);
+            ps.setString(9, upLink);
 			
             ps.executeUpdate();
 
@@ -227,18 +260,21 @@ public class DBManager {
     public static String SELECT_NODE_BY_INS_SQL = "select * from node where institution = ?;";
     public static String SELECT_NODE_BY_PRO_SQL = "select * from node where profession = ?;";
     public static String SELECT_NODE_BY_FKEY_SQL = "select * from node where father = ?";
-    public static String UPDATE_NODE_SQL = "update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where nodekey = ?;";
+    public static String UPDATE_NODE_INFO_SQL = "update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where nodekey = ?;";
+    public static String UPDATE_NODE_FATHER_SQL = "update node set father = ? where nodekey = ?;";
+    public static String UPDATE_NODE_SON_SQL = "update node set son = ? where nodekey = ?;";
     public static String DELECT_NODE_BY_KEY_SQL = "delete from node where nodekey = ?;";
-    public static String INSERT_NODE_SQL = "insert into node (nodekey, userid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?);";
+    public static String INSERT_NODE_SQL = "insert into node (nodekey, userid, father, son, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?,?);";
 
 	public static String CREATE_NODETABLE_SQL = "create table node(" +
 			" nodekey int not null auto_increment primary key , " +
 			" userid varchar(30) not null," +
-			" father int not null," +
+			" father varchar(100) ," +
+			" son varchar(100) ," +
 			" nodename varchar(40)," +
-			" age int," +
+			" age varchar(50)," +
 			" profession varchar(50)," +
-            " institution varchar(30)," +
+            " institution varchar(50)," +
             " link varchar(200)" + 
 			");";
 	public static String CREATE_USERTABLE_SQL = "create table user(" +
@@ -252,7 +288,7 @@ public class DBManager {
 	
 	private final String userName = "root";
 	private final String passWord = "vorstellung";
-	private final String dbName = "RandR";
+	private final String dbName = "RandRwiki";
 	private final String dbURL = "jdbc:mysql://localhost:3306/" + dbName;
 	private final String NodeTable = "node";
 	private final String userTable = "user";

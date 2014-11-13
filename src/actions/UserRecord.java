@@ -6,6 +6,7 @@ public class UserRecord {
 		
 	}
 	
+	
 	//clean
 	public void clear(){
 		userID = STRING_INVALID;
