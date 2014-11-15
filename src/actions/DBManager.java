@@ -48,10 +48,12 @@ public class DBManager {
 		return result;
     }
 
-    public final ResultSet selectNodebyName( String name ) {
+    public final ResultSet selectNodebyName( String name, boolean ambiguity ) {
         try{
-			PreparedStatement ps = dbConnection.prepareStatement(SELECT_NODE_BY_NAME_SQL);
-			ps.setString(1, name);
+        	String SQLStatement = ambiguity?SELECT_NODE_BY_INS_AMIBIGUITY_SQL:SELECT_NODE_BY_INS_SQL;
+        	String inqueryParameter = ambiguity?(name + AMBIGUITY_TERM):name;
+			PreparedStatement ps = dbConnection.prepareStatement(SQLStatement);
+			ps.setString(1, inqueryParameter);
 			
             result = ps.executeQuery();
 
@@ -62,10 +64,12 @@ public class DBManager {
 		return result;
     }
     
-    public final ResultSet selectNodebyIns( String ins ){
+    public final ResultSet selectNodebyIns( String ins, boolean ambiguity ){
         try{
-			PreparedStatement ps = dbConnection.prepareStatement(SELECT_NODE_BY_INS_SQL);
-			ps.setString(1, ins);
+        	String SQLStatement = ambiguity?SELECT_NODE_BY_INS_AMIBIGUITY_SQL:SELECT_NODE_BY_INS_SQL;
+        	String inqueryParameter = ambiguity?(ins + AMBIGUITY_TERM):ins;
+			PreparedStatement ps = dbConnection.prepareStatement(SQLStatement);
+			ps.setString(1, inqueryParameter);
 			
             result = ps.executeQuery();
 
@@ -76,10 +80,12 @@ public class DBManager {
 		return result;
     }
 
-    public final ResultSet selectNodebyPro( String pro ){
+    public final ResultSet selectNodebyPro( String pro, boolean ambiguity ){
         try{
-			PreparedStatement ps = dbConnection.prepareStatement(SELECT_NODE_BY_PRO_SQL);
-			ps.setString(1, pro);
+        	String SQLStatement = ambiguity?SELECT_NODE_BY_PRO_AMIBIGUITY_SQL:SELECT_NODE_BY_PRO_SQL;
+        	String inqueryParameter = ambiguity?(pro + AMBIGUITY_TERM):pro;
+			PreparedStatement ps = dbConnection.prepareStatement(SQLStatement);
+			ps.setString(1, inqueryParameter);
 			
             result = ps.executeQuery();
 
@@ -105,12 +111,12 @@ public class DBManager {
 		return result;
     }
 
-    public boolean updateNode( int chosenKey, String upName, String upAge, String upPro, String upIns, String upLink ){
+    public boolean updateNode( int chosenKey, String upName, String upBirthdate, String upPro, String upIns, String upLink ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_INFO_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
             ps.setString(1, upName);
-            ps.setString(2, upAge);
+            ps.setString(2, upBirthdate);
             ps.setString(3, upPro);
             ps.setString(4, upIns);
             ps.setString(5, upLink);
@@ -140,7 +146,40 @@ public class DBManager {
 		}
 		return true;
     }
+    
+    public boolean updateNodeBio( int chosenKey, String Bio ){
+        try{
+			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_BIO_SQL);
+			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
+            ps.setString(1, Bio);
+            ps.setInt(2, chosenKey);
+			
+            ps.executeUpdate();
 
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to update.");
+			return false;
+		}
+		return true;
+    }
+
+    public boolean updateNodeGender( int chosenKey, String gender ){
+        try{
+			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_FATHER_SQL);
+			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
+            ps.setString(1, gender);
+            ps.setInt(2, chosenKey);
+			
+            ps.executeUpdate();
+
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to update.");
+			return false;
+		}
+		return true;
+    }
+
+    
     public boolean updateNodeSon( int chosenKey, String son ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_SON_SQL);
@@ -172,7 +211,7 @@ public class DBManager {
 		return true;
     }    
 
-    public boolean insertNode( int key, String userID, String father, String son, String upName, String upAge, String upPro, String upIns, String upLink){
+    public boolean insertNode( int key, String userID, String father, String son, String upName, String upGender, String upBirthdate, String upPro, String upIns, String upLink, String upBio){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(INSERT_NODE_SQL);
 			//insert into node (nodekey, userid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?);
@@ -181,10 +220,12 @@ public class DBManager {
             ps.setString(3, father);
             ps.setString(4, son);
             ps.setString(5, upName);
-            ps.setString(6, upAge);
-            ps.setString(7, upPro);
-            ps.setString(8, upIns);
-            ps.setString(9, upLink);
+            ps.setString(6, upGender);
+            ps.setString(7, upBirthdate);
+            ps.setString(8, upPro);
+            ps.setString(9, upIns);
+            ps.setString(10, upLink);
+            ps.setString(11, upBio);
 			
             ps.executeUpdate();
 
@@ -259,23 +300,31 @@ public class DBManager {
     public static String SELECT_NODE_BY_NAME_SQL = "select * from node where nodename = ?;";
     public static String SELECT_NODE_BY_INS_SQL = "select * from node where institution = ?;";
     public static String SELECT_NODE_BY_PRO_SQL = "select * from node where profession = ?;";
+    public static String SELECT_NODE_BY_NAME_AMIBIGUITY_SQL = "select * from node where nodename like ?;";
+    public static String SELECT_NODE_BY_INS_AMIBIGUITY_SQL = "select * from node where institution like ?;";
+    public static String SELECT_NODE_BY_PRO_AMIBIGUITY_SQL = "select * from node where profession like ?;";
     public static String SELECT_NODE_BY_FKEY_SQL = "select * from node where father = ?";
-    public static String UPDATE_NODE_INFO_SQL = "update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where nodekey = ?;";
+    public static String UPDATE_NODE_INFO_SQL = "update node set nodename = ?, birthdate = ?, profession = ?, institution = ?, link = ? where nodekey = ?;";
     public static String UPDATE_NODE_FATHER_SQL = "update node set father = ? where nodekey = ?;";
+    public static String UPDATE_NODE_GENDER_SQL = "update node set gender = ? where nodekey = ?;";
+    public static String UPDATE_NODE_BIO_SQL = "update node set bio = ? where nodekey = ?;";
     public static String UPDATE_NODE_SON_SQL = "update node set son = ? where nodekey = ?;";
     public static String DELECT_NODE_BY_KEY_SQL = "delete from node where nodekey = ?;";
-    public static String INSERT_NODE_SQL = "insert into node (nodekey, userid, father, son, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?,?);";
-
+    public static String INSERT_NODE_SQL = "insert into node (nodekey, userid, father, son, nodename, gender, birthdate, profession, institution, link, bio) values(?,?,?,?,?,?,?,?,?,?,?);";
+    public static String AMBIGUITY_TERM = "%";
+    
 	public static String CREATE_NODETABLE_SQL = "create table node(" +
-			" nodekey int not null auto_increment primary key , " +
+			" nodekey varchar(6) not null primary key , " +
 			" userid varchar(30) not null," +
 			" father varchar(100) ," +
 			" son varchar(100) ," +
 			" nodename varchar(40)," +
-			" age varchar(50)," +
+			" gender varchar(6)," +
+			" birthdate varchar(50)," +
 			" profession varchar(50)," +
             " institution varchar(50)," +
             " link varchar(200)" + 
+            " bio varchar" +
 			");";
 	public static String CREATE_USERTABLE_SQL = "create table user(" +
 			"userid varchar(30) not null primary key, " +

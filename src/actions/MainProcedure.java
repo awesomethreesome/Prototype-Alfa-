@@ -24,167 +24,104 @@ public class MainProcedure extends ActionSupport {
 	/////public methods 
 	
 	
-	public String logInCheck() throws SQLException{//////////////////////////////////////////////////////////////
+	public void logInCheck( String inputUserName, String inputPassword ) throws SQLException{//name password 
 		System.out.println(inputPassword + " " + inputUserName);
-		if ( passWord.equals(inputPassword) && userName.equals(inputUserName)){
-			
-			authorized = true;
-			//search the user info 
-			ResultSet temp = dataBase.selectUser( userName ,  inputPassword );
-			if ( temp == null ) {
-				authorized = false;
-				return "UN_AUTHORIZED";
-			}
-			transcribeUser( temp );//current user info has be loaded into currentUser
-			System.out.println("currentUser info: "+currentUser.getUserID() + " "+ currentUser.getRootList()); 
-			return "AUTHORIZED";
-		}
-		authorized = false;
-		return "UN_AUTHORIZED";
-	}
-	
-	public String manageQuery() throws SQLException{
-		ResultSet  temp = null; 
-		temp = dataBase.selectRootNodebyUserID( currentUser.getUserID() );
+		
+		ResultSet temp = dataBase.selectUser( inputUserName ,  inputPassword );
 		if ( temp == null ) {
-			return "ERROR";
+			authorized = false;
+			return;
 		}
-		transcribeNode( temp );//all roots has been loaded into currentSons
-		currentNode.setFather(ROOT_STAGE);//indicating that it on the root stage
-		return "QUERY_DONE";
+		transcribeUser( temp );//current user info has be loaded into currentUser
+		authorized = true;
+		System.out.println("currentUser info: "+currentUser.getUserID() + " "+ currentUser.getRootList());
 	}
 	
-	public String searchQuery() throws SQLException{
+	public void logOut(){
+		authorized = false;
+	}
+	
+	public ArrayList<ListItem> searchQuery( String queryInput, String queryType ) throws SQLException{
 		//queryType has 3 possible values{Name, Institution, Profession, }
 		ResultSet temp = null;
-		if ( queryType.equals("Name")  ) {
-			temp = dataBase.selectNodebyName(queryInput);		
-		}
-		else if ( queryType.equals("Institution") ) {
-			temp = dataBase.selectNodebyIns(queryInput);
+		if ( queryType.equals("Institution") ) {
+			temp = dataBase.selectNodebyIns(queryInput, true);//search with ambiguity
 		}
 		else if ( queryType.equals("Profession") ) {
-			temp = dataBase.selectNodebyPro(queryInput);
+			temp = dataBase.selectNodebyPro(queryInput, true);
 		}
-		else {//default option is search by book title
-			temp = dataBase.selectNodebyName(queryInput);
+		else {//default option is search by name
+			temp = dataBase.selectNodebyName(queryInput, true);
 		}
-		transcribeNode( temp );//now all selected book have been stored in currentSons, which is a list of NodeRecord
-		
-		return "QUERY_DONE";
+		transcribeSearchResult( temp );//now all possible node have been stored in searchResultList, which is a list of ListItem
+		return searchResultList;
 	}
 	
-	public String ascendQuery() {///////////////////////////////////////////////////////////////////////////
-		
-		
-		return "ASCEND_DONE";
-	}
-	
-	public String detailQuery() {
-		int index = findIndexofChosenNode();
-		System.out.println("chosen index:" + index);
-		NodeRecord temp = currentSons.get(index);
-		System.out.println("temp:" + temp.getName() + " " + temp.getUserID());
-		setDetailBuffer( temp );
-		System.out.println("detailbuffer:" + detailBuffer.getName() + " " + detailBuffer.getUserID());
-		return "QUERY_APPROVED"; 
-	}
-	
-	public String descendQuery() throws SQLException{
-		int index = findIndexofChosenNode();
-		System.out.println("descend index:" + index);
-		//set the chosen node as new father
-		currentNode = currentSons.get(index);		
-		//search sons of currentNode	
-		ResultSet temp = dataBase.selectNodebyFatherKey( currentNode.getKey() );
-		transcribeNode( temp );//now the new sons has been loaded into currentSons
-		//System.out.println("descend node:" +currentSons.size());
-		return "DESCEND_DONE";
-	}
-	
-	public String editQuery() {
-		//int index = findIndexofChosenNode();
-		return "QUERY_DONE"; 
-	}
-	
-	public String blankSwitch() {
-		return "SWITCH_APPROVED";
-	}
-	
-	public String importNode() {////////////////////////////////////////////////////////////////////////////////
-		//import the node in detailBuffer to be a local root 
-		
-		
-		return "IMPORT_DONE";
-	}
-	
-	
-	public String updateQuery() {
-		System.out.println("Update: "+ chosenKey+" "+upName+" "+upAge+" "+upPro+" "+upIns+" "+upLink);
-		boolean flag =  dataBase.updateNode(chosenKey, upName, upAge, upPro, upIns, upLink);
-		
-		if ( flag == true ) {
-			cleanUpdateBuffer();
-			return "UPDATE_DONE";
+	public NodeRecord detailQuery( String Hash ) {
+		NodeRecord temp = new NodeRecord();
+		temp.setKey(STRING_INVALID);
+		for (int i=0; i<currentBuffer.size(); i++ ){
+			if ( currentBuffer.get(i).getKey() == Hash )
+				break;
 		}
-		cleanUpdateBuffer();
-		return "ERROR";
-	}
-	
-	public String errorRecover(){///////////////////////////////////////////////////////////////////
 		
-		return "TURN_BACK";
+		return temp;
 	}
 	
-	public String deleteQuery() {
-		int index = findIndexofChosenNode();
-		System.out.println("delete index: "+ index);
-		if ( index < 0 || index > currentSons.size() )
-			return "ERROR";
+	public void updateQuery() {/////////////////////////////////////////////////////
 		
-		System.out.println("chosenkey and name :" + chosenKey + currentSons.get(index).getName());
-		if ( dataBase.deleteNode(chosenKey) == true ) { 
-			return "DELETE_DONE";
-		}
-		return "ERROR";
 	}
 	
-	public String addQuery() {
-		boolean flag;
-		//insert new node
-		//notice that the Key of this new node is automatically gennerated by the database and it's unique
-		System.out.println("to add:"+" "+currentUser.getUserID()+" "+currentNode.getKey()+" "+upName+" "+upAge+" "+upPro+" "+upIns+" "+upLink);
-		flag = dataBase.insertNode(currentUser.getUserID(), currentNode.getKey(), upName, upAge, upPro, upIns, upLink); 
-		if ( flag == false ) {
-			cleanUpdateBuffer();
-			return "ERROR";
-		}
-		cleanUpdateBuffer();
-		return "ADD_DONE";
+	public void deleteQuery( String Hash ) {
+		
+	}
+	
+	public void addQuery(  NodeRecord newNode ) {
+		
+	}
+	
+	public void fetch( String hash ){
+		
 	}
 	
 	/////private methods
-	private void transcribeNode( ResultSet sr ) throws SQLException {
-		//clean old result
-		currentSons.clear();
-		currentSons = new ArrayList<NodeRecord>();
-		NodeRecord temp = null;
+	/**
+	 * 
+	 * @param sr
+	 * @throws SQLException
+	 * Description:
+	 * 1.transcribe the search result into searchResultList(arraylist<listitem>)
+	 */
+	private void transcribeSearchResult( ResultSet sr ) throws SQLException {
+		//ArrayList<NodeRecord> currentResult = new ArrayList<NodeRecord>();
+		//NodeRecord temp = null;
+		searchResultList.clear();
+		ListItem temp = new ListItem();
+		temp = null;
 		while ( sr.next() ) {
+			/*
 			temp = new NodeRecord();
-			temp.setKey(sr.getInt(1));
+			temp.setKey(sr.getString(1));
 			temp.setUserID(sr.getString(2));
-			temp.setFather(sr.getInt(3));
-			temp.setName(sr.getString(4));
-			temp.setAge(sr.getInt(5));
-			temp.setProfession(sr.getString(6));
-			temp.setInstitution(sr.getString(7));
-			temp.setLink(sr.getString(8));
+			temp.setFather(sr.getString(3));
+			temp.setSon(sr.getString(4));
+			temp.setName(sr.getString(5));
+			temp.setGender(sr.getString(6));
+			temp.setBirthDate(sr.getString(7));
+			temp.setProfession(sr.getString(8));
+			temp.setInstitution(sr.getString(9));
+			temp.setLink(sr.getString(10));
+			temp.setBio(sr.getString(11));
+			*/
+			temp = new ListItem();
 			
-			currentSons.add(temp);
+			//currentResult.add(temp);
+			searchResultList.add(temp);
 			temp = null;
 		}
 		sr.beforeFirst();
-		//sr.close();
+		
+		//currentBuffer.initialize(currentResult);
 	}
 	
 	private void transcribeUser( ResultSet sr ) throws SQLException{////////////////////////////////////////
@@ -198,30 +135,11 @@ public class MainProcedure extends ActionSupport {
 		sr.beforeFirst();
 	}
 	
-	private int findIndexofChosenNode(){
-		//find the chosen node in currentSons
-		int i = 0;
-		for (i = 0; i < currentSons.size(); i++){
-			if ( currentSons.get(i).getKey() == chosenKey ){
-				break;
-			}
-		}
-		return i;
-	}
-	
-	private void cleanUpdateBuffer() {
-		updateBuffer.clear();
-		upAge = NodeRecord.INT_INVALID;
-		upName = NodeRecord.STRING_INVALID;
-		upPro = NodeRecord.STRING_INVALID;
-		upIns = NodeRecord.STRING_INVALID;
-		upLink = NodeRecord.STRING_INVALID;
-	}
 	/////public variables
 	
-
 	public static int INT_INVALID = -1;
 	public static double DOUBLE_INVALID = -1.0;
+	public static String STRING_INVALID = "end of the line";
 	public static int ROOT_STAGE = -1;
 	public static String SEARCHING_STAGE = "on searching";
 	/////private variables
@@ -229,125 +147,27 @@ public class MainProcedure extends ActionSupport {
 	private final String passWord = "vorstellung";
 	private final String userName = "wille"; 
 	private static boolean authorized = false;
-	private static int chosenKey = INT_INVALID;//the key of chosen node in currentSons
-	
-	private static List<NodeRecord> currentSons = new ArrayList<NodeRecord>();//all sons of currentNode
-	private static NodeRecord currentNode = new NodeRecord();//current chosen node
-	private static UserRecord currentUser = new UserRecord() ;//current user
-	private static NodeRecord detailBuffer = new NodeRecord();//store the node whose detail is to be displayed
-	
-	private static String queryInput, queryType;//queryType has 3 possible values{Name, Institution, Profession, }
-	//private static String inputPassword = new String(), inputUserName = new String();
 	private static String inputPassword = "vorstellung", inputUserName = "wille";
 	
-	private static NodeRecord updateBuffer = new NodeRecord(); 
-	private String upName, upPro, upIns, upLink;
-	private int upAge;
+	private UserRecord currentUser = new UserRecord() ;//current user
+	private EditBuffer currentBuffer = new EditBuffer();
+	private HistoryList history = new HistoryList();
+	
+	private ArrayList<ListItem> searchResultList = new ArrayList<ListItem>();
 	
 	
-	/////all setters and getters
-	public int getChosenKey() {
-		return chosenKey;
-	}
-
-	public void setChosenKey(int chosenKey) {
-		MainProcedure.chosenKey = chosenKey;
-	}
-
-	public List<NodeRecord> getCurrentSons() {
-		return currentSons;
-	}
-
-	public void setCurrentSons(List<NodeRecord> currentSons) {
-		MainProcedure.currentSons = currentSons;
-	}
-
-	public NodeRecord getCurrentNode() {
-		return currentNode;
-	}
-
-	public void setCurrentNode(NodeRecord currentNode) {
-		MainProcedure.currentNode = currentNode;
+	
+	/////all setters and getters	
+	public long getSerialversionuid() {
+		return serialVersionUID;
 	}
 
 	public UserRecord getCurrentUser() {
 		return currentUser;
 	}
-
 	public void setCurrentUser(UserRecord currentUser) {
-		MainProcedure.currentUser = currentUser;
+		this.currentUser = currentUser;
 	}
-
-	public String getQueryInput() {
-		return queryInput;
-	}
-
-	public void setQueryInput(String queryInput) {
-		MainProcedure.queryInput = queryInput;
-	}
-
-	
-	
-	public long getSerialversionuid() {
-		return serialVersionUID;
-	}
-
-	public NodeRecord getDetailBuffer() {
-		return detailBuffer;
-	}
-
-	public void setDetailBuffer(NodeRecord detailBuffer) {
-		MainProcedure.detailBuffer = detailBuffer;
-	}
-
-	public NodeRecord getUpdateBuffer() {
-		return updateBuffer;
-	}
-
-	public void setUpdateBuffer(NodeRecord updateBuffer) {
-		MainProcedure.updateBuffer = updateBuffer;
-	}
-
-	public String getUpName() {
-		return upName;
-	}
-
-	public void setUpName(String upName) {
-		this.upName = upName;
-	}
-
-	public String getUpPro() {
-		return upPro;
-	}
-
-	public void setUpPro(String upPro) {
-		this.upPro = upPro;
-	}
-
-	public String getUpIns() {
-		return upIns;
-	}
-
-	public void setUpIns(String upIns) {
-		this.upIns = upIns;
-	}
-
-	public String getUpLink() {
-		return upLink;
-	}
-
-	public void setUpLink(String upLink) {
-		this.upLink = upLink;
-	}
-
-	public String getQueryType() {
-		return queryType;
-	}
-
-	public void setQueryType(String queryType) {
-		MainProcedure.queryType = queryType;
-	}
-
 	public String getInputPassword() {
 		return inputPassword;
 	}
@@ -364,11 +184,4 @@ public class MainProcedure extends ActionSupport {
 		MainProcedure.inputUserName = inputUserName;
 	}
 
-	public int getUpAge() {
-		return upAge;
-	}
-
-	public void setUpAge(int upAge) {
-		this.upAge = upAge;
-	}
 }
