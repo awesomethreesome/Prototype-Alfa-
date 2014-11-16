@@ -2,7 +2,7 @@ package actions;
 
 public class NodeRecord {
 	/////constructor
-	NodeRecord(){
+	public NodeRecord(){
 		
 	}
 		
@@ -11,6 +11,7 @@ public class NodeRecord {
 		key = nodeRecord.getKey();
 		userID = new String(nodeRecord.getUserID());
 		son = new String(nodeRecord.getSon());
+		setFather(nodeRecord.getFather());
 		name = new String(nodeRecord.getName());
 		gender = nodeRecord.getGender();
 		setBirthDate(nodeRecord.getBirthDate());
@@ -19,7 +20,37 @@ public class NodeRecord {
 		link = new String(nodeRecord.getLink());
 		Bio = nodeRecord.getBio();
 	}
-
+	
+	public NodeRecord ( CharDesc cd){
+		key = null;
+		userID = null;
+		son = null;
+		setFather(null);
+		name = new String(cd.name);
+		gender = cd.gender;
+		setBirthDate(cd.birthDate);
+		profession = new String(cd.profession);
+		institution = new String(cd.institution);
+		link = new String(cd.link);
+		Bio = cd.bio;
+	}
+	
+	public NodeRecord( String hash, String id, String decs, String asc, String name, String gender, String birth, 
+					   String pro, String ins, String link, String bio){
+		setKey(hash);
+		setUserID(id);
+		setSon(decs);
+		setFather(asc);
+		setName(name);
+		setGender(gender);
+		setBirthDate(birth);
+		setProfession(pro);
+		setInstitution(ins);
+		setLink(link);
+		setBio(bio);
+	}
+	
+	/////public methods
 	public void clear(){
 		key = STRING_INVALID;
 		userID = STRING_INVALID;

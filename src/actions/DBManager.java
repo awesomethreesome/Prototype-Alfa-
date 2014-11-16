@@ -37,7 +37,7 @@ public class DBManager {
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(SELECT_ROOTNODE_SQL);
 			ps.setString(1, userID);
-            ps.setInt(2, -1);//root node has no father 
+            ps.setString(2, null);//root node has no father 
 			
             result = ps.executeQuery();
 
@@ -111,7 +111,7 @@ public class DBManager {
 		return result;
     }
 
-    public boolean updateNode( int chosenKey, String upName, String upBirthdate, String upPro, String upIns, String upLink ){
+    public boolean updateNode( String chosenKey, String upName, String upBirthdate, String upPro, String upIns, String upLink ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_INFO_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
@@ -120,7 +120,7 @@ public class DBManager {
             ps.setString(3, upPro);
             ps.setString(4, upIns);
             ps.setString(5, upLink);
-            ps.setInt(6, chosenKey);
+            ps.setString(6, chosenKey);
 			
             ps.executeUpdate();
 
@@ -131,12 +131,12 @@ public class DBManager {
 		return true;
     }
     
-    public boolean updateNodeFather( int chosenKey, String father ){
+    public boolean updateNodeFather( String chosenKey, String father ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_FATHER_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
             ps.setString(1, father);
-            ps.setInt(2, chosenKey);
+            ps.setString(2, chosenKey);
 			
             ps.executeUpdate();
 
@@ -147,12 +147,12 @@ public class DBManager {
 		return true;
     }
     
-    public boolean updateNodeBio( int chosenKey, String Bio ){
+    public boolean updateNodeBio( String chosenKey, String Bio ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_BIO_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
             ps.setString(1, Bio);
-            ps.setInt(2, chosenKey);
+            ps.setString(2, chosenKey);
 			
             ps.executeUpdate();
 
@@ -163,12 +163,12 @@ public class DBManager {
 		return true;
     }
 
-    public boolean updateNodeGender( int chosenKey, String gender ){
+    public boolean updateNodeGender( String chosenKey, String gender ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_FATHER_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
             ps.setString(1, gender);
-            ps.setInt(2, chosenKey);
+            ps.setString(2, chosenKey);
 			
             ps.executeUpdate();
 
@@ -180,12 +180,12 @@ public class DBManager {
     }
 
     
-    public boolean updateNodeSon( int chosenKey, String son ){
+    public boolean updateNodeSon( String chosenKey, String son ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_SON_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
             ps.setString(1, son);
-            ps.setInt(2, chosenKey);
+            ps.setString(2, chosenKey);
 			
             ps.executeUpdate();
 
@@ -196,12 +196,12 @@ public class DBManager {
 		return true;
     }
 
-    public boolean deleteNode( int key ){
+    public boolean deleteNode( String key ){
         try{
         	
 			PreparedStatement ps = dbConnection.prepareStatement(DELECT_NODE_BY_KEY_SQL);
 			//delect from node where nodekey = ?;
-			ps.setInt(1, key);
+			ps.setString(1, key);
 			ps.executeUpdate();
 
 		}catch ( Exception e ) {
@@ -211,11 +211,13 @@ public class DBManager {
 		return true;
     }    
 
-    public boolean insertNode( int key, String userID, String father, String son, String upName, String upGender, String upBirthdate, String upPro, String upIns, String upLink, String upBio){
+    public boolean insertNode( String key, String userID, String father, String son, String upName, 
+    		                   String upGender, String upBirthdate, String upPro, String upIns, 
+    		                   String upLink, String upBio ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(INSERT_NODE_SQL);
 			//insert into node (nodekey, userid, father, nodename, age, profession, institution, link) values(?,?,?,?,?,?,?,?);
-			ps.setInt(1, key);
+			ps.setString(1, key);
             ps.setString(2, userID);
             ps.setString(3, father);
             ps.setString(4, son);

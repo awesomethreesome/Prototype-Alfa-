@@ -3,12 +3,15 @@ import java.util.*;
 
 public class ListItem {
 	/////constructor
-	ListItem(){
+	public ListItem(){
 		front = new String();
 		back =  new String();
 	}
 	
-	
+	public ListItem(String front, String back) {
+		this.front = front;
+		this.back = back;
+	}
 	/////private variables
 	String front;
 	String back;

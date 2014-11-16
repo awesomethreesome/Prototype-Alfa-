@@ -24,7 +24,9 @@ public class HistoryList {
 	}
 	
 	public void pushBack( EditBuffer currentBuffer, String modification ){
-		historyChain.add(currentBuffer);
+		EditBuffer temp = null;
+		temp = new EditBuffer(currentBuffer);
+		historyChain.add(temp);
 		modificationRecord.add(modification);
 	}
 	
