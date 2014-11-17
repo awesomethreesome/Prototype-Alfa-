@@ -47,6 +47,13 @@ public class HistoryList {
 		return historyChain.remove(index);
 	}
 	
+	public String ModRecord( int i ){
+		if ( !boundaryCheck(i) ){
+			return null;
+		}
+		return new String(modificationRecord.get(i));
+	}
+	
 	public void clear(){
 		historyChain = new ArrayList<EditBuffer>();
 		modificationRecord = new ArrayList<String>();
@@ -56,8 +63,20 @@ public class HistoryList {
 	public int size(){
 		return historyChain.size();
 	}
-	/////private methods
 	
+	public EditBuffer get(int i){
+		if ( !boundaryCheck(i) ){
+			return null;
+		}
+		return new EditBuffer(historyChain.get(i));
+	}
+	
+	/////private methods
+	private boolean boundaryCheck(int i){
+		if ( i<0 || i>modificationRecord.size() )
+			return false;
+		return true;
+	}
 	
 	/////public constant;(modification type)
 	String UPDATE_INFO = "";

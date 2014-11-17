@@ -48,6 +48,20 @@ public class DBManager {
 		return result;
     }
 
+	public final ResultSet selectNodebyHash( String hash) {
+        try{
+			PreparedStatement ps = dbConnection.prepareStatement(SELECT_NODE_BY_HASH_SQL);
+			ps.setString(1, hash);
+			
+            result = ps.executeQuery();
+
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to insert book.");
+			return null;
+		}
+		return result;
+    }
+	
     public final ResultSet selectNodebyName( String name, boolean ambiguity ) {
         try{
         	String SQLStatement = ambiguity?SELECT_NODE_BY_INS_AMIBIGUITY_SQL:SELECT_NODE_BY_INS_SQL;
@@ -296,9 +310,10 @@ public class DBManager {
 
 	/////public variables
 	
-
+	
     public static String SELECT_USER_SQL = "select * from user where userid = ? and upassword = ?;";
     public static String SELECT_ROOTNODE_SQL = "select * from node where userid = ? and father = ?;";
+    public static String SELECT_NODE_BY_HASH_SQL = "select * from node where nodekey = ?;";
     public static String SELECT_NODE_BY_NAME_SQL = "select * from node where nodename = ?;";
     public static String SELECT_NODE_BY_INS_SQL = "select * from node where institution = ?;";
     public static String SELECT_NODE_BY_PRO_SQL = "select * from node where profession = ?;";

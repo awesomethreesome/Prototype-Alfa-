@@ -6,6 +6,7 @@ public class CharDesc {
 	}
 	
 	public CharDesc( NodeRecord nodeRecord ){
+		hash = nodeRecord.getKey();
 		name = nodeRecord.getName();
 		gender = nodeRecord.getGender();
 		birthDate = nodeRecord.getBirthDate();
@@ -15,6 +16,7 @@ public class CharDesc {
 		bio = nodeRecord.getBio();
 	}	
 	
+	public String hash;
 	public String name = "John 117";
 	public String gender;
 	public String birthDate;

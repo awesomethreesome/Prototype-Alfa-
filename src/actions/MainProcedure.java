@@ -69,49 +69,53 @@ public class MainProcedure extends ActionSupport {
 	//returns true when success, false otherwise.
 	//refresh historyList
 	// two inputs are all hash code
-	public boolean link(String teacher, String student) {
+	public boolean link(String teacher, String student) throws SQLException {
 		if ( !authorityCheck() )
 			return false;
-		int teacherIndex = searchCurrentBuffer(teacher), studentIndex = searchCurrentBuffer(student);
-		if ( teacherIndex == INT_INVALID || studentIndex == INT_INVALID ){//not found
+		NodeRecord teacherSource = getSource( teacher );
+		NodeRecord studentSource = getSource( student );
+		if ( teacherSource == null || studentSource == null){//fail to find one or both node 
 			return false;
 		}
-		NodeRecord teacherRecord = new NodeRecord( null, null, null, null, null, null, null, null, null, null, null );
-		NodeRecord studentRecord = new NodeRecord( null, null, null, null, null, null, null, null, null, null, null );
+		
+		NodeRecord teacherRecord = new NodeRecord( teacherSource );
+		NodeRecord studentRecord = new NodeRecord( studentSource );
 		//set new relation link
-		String newSon = currentBuffer.get(teacherIndex).getSon() + student;
-		String newFather = currentBuffer.get(studentIndex).getFather() + teacher; 
+		String newSon = teacherRecord.getSon() + student;
+		String newFather = studentRecord.getFather() + teacher; 
 		teacherRecord.setSon(newSon);
 		studentRecord.setFather(newFather);
+		
 		String modification = "link" +teacherRecord.getName()+ "as" +studentRecord.getName()+ "'s teacher";
-		history.pushBack(currentBuffer, modification);
-		currentBuffer.updateRecord(teacher, teacherRecord);
-		currentBuffer.updateRecord(student, studentRecord);
+		EditBuffer newBuffer = generateBuffer(teacherRecord, studentRecord);
+		history.pushBack(newBuffer, modification);
 		return true;
 	}
 	
 	//returns true when success, false otherwise.
 	//refresh historyList
-	public boolean sever(String teacher, String student) {
+	public boolean sever(String teacher, String student) throws SQLException {
 		if ( !authorityCheck() )
 			return false;
-		if ( !authorityCheck() )
-			return false;
-		int teacherIndex = searchCurrentBuffer(teacher), studentIndex = searchCurrentBuffer(student);
-		if ( teacherIndex == INT_INVALID || studentIndex == INT_INVALID ){//not found
+		NodeRecord teacherSource = getSource( teacher );
+		NodeRecord studentSource = getSource( student );
+		if ( teacherSource == null || studentSource == null){//fail to find one or both node 
 			return false;
 		}
-		NodeRecord teacherRecord = new NodeRecord( null, null, null, null, null, null, null, null, null, null, null );
-		NodeRecord studentRecord = new NodeRecord( null, null, null, null, null, null, null, null, null, null, null );
+		
+		NodeRecord teacherRecord = new NodeRecord( teacherSource );
+		NodeRecord studentRecord = new NodeRecord( studentSource );
 		//set new relation link
-		String newSon = currentBuffer.get(teacherIndex).getSon().replaceAll(student, "");
-		String newFather = currentBuffer.get(studentIndex).getFather().replaceAll(teacher, ""); 
+		String newSon = teacherRecord.getSon().replaceAll(student, "");
+		String newFather = studentRecord.getFather().replaceAll(teacher, ""); 
 		teacherRecord.setSon(newSon);
 		studentRecord.setFather(newFather);
-		String modification = "sever the link between" +teacherRecord.getName()+ "and" +studentRecord.getName();
-		history.pushBack(currentBuffer, modification);
-		currentBuffer.updateRecord(teacher, teacherRecord);
-		currentBuffer.updateRecord(student, studentRecord);
+		
+		String modification = "sever " +teacherRecord.getName()+ "and" +studentRecord.getName();
+		EditBuffer newBuffer = generateBuffer( teacherRecord, studentRecord );
+		history.pushBack(newBuffer, modification);
+		//currentBuffer.updateRecord(teacher, teacherRecord);
+		//currentBuffer.updateRecord(student, studentRecord);
 		return true;
 	}
 	
@@ -119,34 +123,53 @@ public class MainProcedure extends ActionSupport {
 	//refresh historyList
 	public String add( String name, String gender, String birthDate, String son, String father, 
 			           String pro, String ins, String link, String bio ) {
-		if ( !authorityCheck() )
+		if ( !authorityCheck() )//check authority
 			return "";	
+		//if there's no delete history and has record in DB, abandon operation
+		int historyIndex = searchHistorybyName(name);
+		ResultSet tempSet= searchDBbyName(name);
+		if ( historyIndex == INT_INVALID && tempSet != null ){//no record in history but in DB
+			return "FAILURE";
+		}
+		else if (historyIndex != INT_INVALID && tempSet != null){//in DB in history but not been deleted || not in DB, but was not deleted in history  
+			String modRecord = history.ModRecord(historyIndex);
+			if ( modRecord.contains("delete") == false)
+				return "FAILURE";
+		}
+		
 		NodeRecord temp = new NodeRecord( hashGenerator.generateHash(),currentUser.getUserID(), son, father, 
 										  name, gender,birthDate, pro, ins, link, bio );
 		String modification = "Add node: " + temp.getName();
-		history.pushBack(currentBuffer, modification);
-		currentBuffer.addRecord(temp);
+		EditBuffer newBuffer = generateBuffer(temp, null);
+		history.pushBack(newBuffer, modification);
 		return temp.getKey();
 	}
 	
-	public boolean delete( String Hash ) {
+	public boolean delete( String Hash ) throws SQLException {
 		if ( !authorityCheck() )
 			return false;
-		//search the node in currentBuffer
-		int index = searchCurrentBuffer(Hash); 
-		if (  index != INT_INVALID ){
-			//record modification
-			String modification = "delete node: " + currentBuffer.get(index).getName();
-			history.pushBack(currentBuffer, modification);
-			currentBuffer.deleteRecord(Hash);
-			return true;
+		//if there's no add history and has no record in DB, abandon operation
+		int historyIndex = searchHistory(Hash);
+		ResultSet tempSet= searchDB(Hash);
+		if ( historyIndex == INT_INVALID && tempSet == null ){//has no record in history or DB
+			return false;
 		}
-		return false;
+		else if (historyIndex != INT_INVALID ){//in DB in history but has been deleted ||not in DB, but was deleted in history  
+			String modRecord = history.ModRecord(historyIndex);
+			if ( modRecord.contains("delete") == true)
+				return false;
+		}
+		
+		NodeRecord source = getSource(Hash);
+		String modification = "delete node: " + source.getName();
+		EditBuffer newBuffer = generateBuffer( new NodeRecord(source), null );
+		history.pushBack(newBuffer, modification);
+		return true;
 	}
 	
 	//returns null when not found
 	//refresh neighborLists and directedWeb
-	public CharDesc get(String hash) {/////////////////////////////没有就要先拉到缓冲区，于是缓冲区要加一个单纯加点的函数·1
+	public CharDesc get(String hash) {////////////////////////////////////////////////////////////////////////////////////////////////////////
 		int index = searchCurrentBuffer(hash);
 		if ( index == INT_INVALID )
 			return null;
@@ -157,24 +180,26 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	//refresh historyList
-	public void edit(CharDesc target) {
+	public void edit(CharDesc target) throws SQLException {
 		if ( !authorityCheck() )
 			return;
-		NodeRecord target0 = new NodeRecord( target );
-		if ( INT_INVALID == searchCurrentBuffer(target0.getKey()) )//not found
+		
+		NodeRecord target0 = getSource( target.hash );
+		if ( target0 == null )//not found
 			return;
 		String modification = "edit node: " + target0.getName();
-		history.pushBack(currentBuffer, modification);
-		currentBuffer.updateRecord(target0.getKey(), target0);
+		EditBuffer newBuffer = generateBuffer(target0, null);
+		history.pushBack(newBuffer, modification);
+		
 	}
 	
 	public void back2History(String back) {
 		int index = Integer.parseInt(back);
-		currentBuffer = history.pop(index);
+		history.pop(index);
 	}
 	
 	//save changes to database
-	public void syncDB() {////////////////////////////////////////////////////////////////////
+	public void syncDB() {////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 		//
 		for (int i=0; i<currentBuffer.size(); i++){
 			
@@ -205,23 +230,8 @@ public class MainProcedure extends ActionSupport {
 		ListItem temp = new ListItem();
 		temp = null;
 		while ( sr.next() ) {
-			/*
-			temp = new NodeRecord();
-			temp.setKey(sr.getString(1));
-			temp.setUserID(sr.getString(2));
-			temp.setFather(sr.getString(3));
-			temp.setSon(sr.getString(4));
-			temp.setName(sr.getString(5));
-			temp.setGender(sr.getString(6));
-			temp.setBirthDate(sr.getString(7));
-			temp.setProfession(sr.getString(8));
-			temp.setInstitution(sr.getString(9));
-			temp.setLink(sr.getString(10));
-			temp.setBio(sr.getString(11));
-			*/
 			temp = new ListItem();
 			
-			//currentResult.add(temp);
 			searchList.add(temp);
 			temp = null;
 		}
@@ -241,6 +251,93 @@ public class MainProcedure extends ActionSupport {
 		sr.beforeFirst();
 	}
 	
+	private NodeRecord transcribeSingleRecord( ResultSet sr) throws SQLException{
+		NodeRecord temp = new NodeRecord();
+		while ( sr.next() ){
+			temp.setKey(sr.getString(1));
+			temp.setUserID(sr.getString(2));
+			temp.setFather(sr.getString(3));
+			temp.setSon(sr.getString(4));
+			temp.setName(sr.getString(5));
+			temp.setGender(sr.getString(6));
+			temp.setBirthDate(sr.getString(7));
+			temp.setProfession(sr.getString(8));
+			temp.setInstitution(sr.getString(9));
+			temp.setLink(sr.getString(10));
+			temp.setBio(sr.getString(11));
+		}
+		sr.beforeFirst();
+		return temp;
+	}
+	
+	private ResultSet searchDB( String hash ){
+		ResultSet temp = null;
+		temp = dataBase.selectNodebyHash(hash);
+		return temp;
+	}
+	
+	private ResultSet searchDBbyName( String name ){
+		ResultSet temp = null;
+		temp = dataBase.selectNodebyName(name, false);
+		return temp;
+	}
+	
+	private int searchHistory( String hash ){
+		for ( int i=history.size()-1; i>=0; i++ ){//search the history in the reversed direction to get latest changes
+			for ( int j=0; j<history.get(i).size();j++ ){
+				if ( history.get(i).get(j).getKey() == hash ){
+					return i;
+				}
+			}
+		}
+		return INT_INVALID;
+	}
+	
+	private int searchHistorybyName( String name ){
+		for ( int i=history.size()-1; i>=0; i++ ){//search the history in the reversed direction to get latest changes
+			for ( int j=0; j<history.get(i).size();j++ ){
+				if ( history.get(i).get(j).getName() == name ){
+					return i;
+				}
+			}
+		}
+		return INT_INVALID;
+	}
+	
+	//for edit, delete, link and sever operation
+	private NodeRecord getSource( String hash ) throws SQLException{
+		int index = searchHistory( hash );
+		ResultSet temp = null;
+		NodeRecord temp2 = null;
+		if ( index != INT_INVALID ){//recently modified in buffer
+			for (int i=0; i<history.get(index).size(); i++){
+				temp2 = history.get(index).get(i);
+				if (temp2.getKey() == hash){
+					break;
+				}
+			}
+			return new NodeRecord(temp2);
+		}
+		else{ 
+			temp = searchDB(hash);
+			if ( temp == null ){//not in buffer or DB
+				return null;
+			}
+			temp2 = transcribeSingleRecord(temp);
+			return new NodeRecord(temp2);
+		}
+	}
+	
+	//if there is only one node changed, set  node2 = null
+	private EditBuffer generateBuffer( NodeRecord node1, NodeRecord node2 ){
+		EditBuffer newBuffer = new EditBuffer();
+		newBuffer.addRecord(node1);
+		if ( node2 != null )
+			newBuffer.addRecord(node2);
+		return new EditBuffer(newBuffer);
+	}
+	
+	
 	private boolean authorityCheck(){
 		return authorized;
 	}
@@ -258,11 +355,11 @@ public class MainProcedure extends ActionSupport {
 	 * 
 	 * @param target
 	 * description:
-	 * 1.load network into currentBuffer from DB 
+	 * 1.load network into currentBuffer and neighborListx from DB 
 	 * 2.the net work consists of nodes who distance 3 unit from the central node
 	 * 3.return the central node   
 	 */
-	private NodeRecord loadCurrentBuffer(  String hash  ){////////////////////////////////////
+	private NodeRecord loadCurrentBufferNeighborList(  String hash  ){////////////////////////////////////
 		
 		
 	}
@@ -270,9 +367,11 @@ public class MainProcedure extends ActionSupport {
 	/**
 	 * 
 	 * @param target
-	 * update neighborListx and directedWeb with currentBuffer
+	 * description:
+	 * 1.update directedWeb with neighborListx
+	 * 2.return DAGList
 	 */
-	private void transcribeCurrentBuffer(){///////////////////////////////////////////////////
+	private ArrayList<DAG> transcribeDAGList(){///////////////////////////////////////////////////
 		
 	}
 	
