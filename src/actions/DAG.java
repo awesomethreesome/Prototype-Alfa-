@@ -6,6 +6,11 @@ public class DAG {
 		dst = new ArrayList<String>();
 	}
 	
+	public DAG(DAG dag){
+		src = dag.src;
+		dst = new ArrayList<String>(dag.dst);
+	}
+	
 	public String src;
 	public ArrayList<String> dst;
 }

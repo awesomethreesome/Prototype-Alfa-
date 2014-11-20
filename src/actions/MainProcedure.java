@@ -194,7 +194,6 @@ public class MainProcedure extends ActionSupport {
 		transcribeDAGList( centralNode );
 		
 		CharDesc tempCharDesc = new CharDesc(centralNode);
-		boolean flag;
 		
 		System.out.println("at the end of get: ");
 		System.out.println("CharDesc: " + tempCharDesc.hash);
@@ -413,7 +412,7 @@ public class MainProcedure extends ActionSupport {
 	
 	private int searchCurrentBuffer( String hash ){
 		for ( int i=0; i<currentBuffer.size(); i++ ){
-			if ( currentBuffer.get(i).getKey() == hash ){
+			if ( currentBuffer.get(i).getKey().equals(hash) ){
 				return i;
 			}
 		}
@@ -439,6 +438,7 @@ public class MainProcedure extends ActionSupport {
 		
 		queue.add(centralNode);
 		currentBuffer.clear();
+		currentBuffer.addRecord(new NodeRecord(centralNode));
 		nextQueue.clear();
 		for ( int i=0; i<3; i++ ){//distance at most 3
 			for ( int j=0; j<queue.size(); j++ ){
@@ -450,7 +450,7 @@ public class MainProcedure extends ActionSupport {
 				
 			}
 			queue.clear();
-			queue = new ArrayList<NodeRecord>(nextQueue);
+			queue = new ArrayList<NodeRecord>(nextQueue);//reference here?we want it to transfer by value
 			nextQueue.clear();
 		}
 		OrganizeNeighborList3();
@@ -526,7 +526,7 @@ public class MainProcedure extends ActionSupport {
 		result.clear();
 		String hashList = new String();
 		String temp = null;
-		if ( direction ){//descendant
+		if ( !direction ){//descendant
 			hashList = center.getSon();
 		}
 		else {
@@ -539,7 +539,7 @@ public class MainProcedure extends ActionSupport {
 		}
 		while ( /*"".equals(hashList) == false*/hashList.length() >=5 ){
 			System.out.println("in sprawl while 1: hashList: " + hashList);
-			temp = hashList.substring(0, 4);
+			temp = hashList.substring(0, 5);
 			result.add(temp);
 			temp =null;
 			hashList = hashList.substring(5);
@@ -558,6 +558,7 @@ public class MainProcedure extends ActionSupport {
 	 * 2.return DAGList
 	 */
 	private ArrayList<DAG> transcribeDAGList( NodeRecord center ){
+		ArrayList<DAG> tempDirectedWeb = new ArrayList<DAG>();
 		ArrayList<String> descendant = new ArrayList<String>();
 		int index = 0;
 		System.out.println("in transcribeDAGList, currentBuffer status: " + currentBuffer);
@@ -573,10 +574,12 @@ public class MainProcedure extends ActionSupport {
 				temp.dst.add( tempName );
 			}
 			if ( currentBuffer.get(i).getKey() != center.getKey() ){
-				temp.dst.add("goto: ");
+				temp.dst.add("goto: " + currentBuffer.get(i).getName());
 			}
+			tempDirectedWeb.add(temp);
 		}
 		System.out.println("directedWeb status: size: " + directedWeb.size());
+		directedWeb = new ArrayList<DAG>(tempDirectedWeb);//DAG is transfered by reference
 		return new ArrayList<DAG>(directedWeb);
 	}
 	
