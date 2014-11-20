@@ -64,7 +64,7 @@ public class DBManager {
 	
     public final ResultSet selectNodebyName( String name, boolean ambiguity ) {
         try{
-        	String SQLStatement = ambiguity?SELECT_NODE_BY_INS_AMIBIGUITY_SQL:SELECT_NODE_BY_INS_SQL;
+        	String SQLStatement = ambiguity?SELECT_NODE_BY_NAME_AMIBIGUITY_SQL:SELECT_NODE_BY_NAME_SQL;
         	String inqueryParameter = ambiguity?(name + AMBIGUITY_TERM):name;
 			PreparedStatement ps = dbConnection.prepareStatement(SQLStatement);
 			ps.setString(1, inqueryParameter);
@@ -341,8 +341,8 @@ public class DBManager {
 			" birthdate varchar(50)," +
 			" profession varchar(50)," +
             " institution varchar(50)," +
-            " link varchar(200)" + 
-            " bio varchar" +
+            " link varchar(200)," + 
+            " bio varchar(1000)" +
 			");";
 	public static String CREATE_USERTABLE_SQL = "create table user(" +
 			"userid varchar(30) not null primary key, " +

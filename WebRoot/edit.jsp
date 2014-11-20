@@ -221,13 +221,17 @@
 		if(allowshowsearchlist)
 			$("#SearchListFrame").fadeIn(600);
 	}
+	function FormTargeting(hash) {
+		document.Targeting.TargetHash.value = hash;
+		document.Targeting.submit();
+	}
 	function ShowSearchList() {
 		UnhideSearchList();
 		var elem = document.getElementById("SearchList");
 		var elemwrite = '<li class="nav-header"  onclick="HideSearchList()">'+resultlist.length+' Result(s) in total. Click here to hide.</li>';
 		for(var i=(currpage-1)*10; i<currpage*10; i++)
 			if(i<resultlist.length)
-				elemwrite = elemwrite + '<li><a href="#">'+(i+1)+'.  '+resultlist[i].front+'</a></li>';
+				elemwrite = elemwrite + '<li><a href="javascript:FormTargeting('+"'"+resultlist[i].back+"'"+');">'+(i+1)+'.  '+resultlist[i].front+'</a></li>';
 			else
 				elemwrite = elemwrite + '<li><a href="javascript:void(0);"><br></a></li>';
 		elemwrite = elemwrite + '<li class="divider"></li><div class="pagination"><ul>';
@@ -438,6 +442,10 @@
  <%if(hash!=null) {%><input type = "hidden" name = "TargetHash" value="<%=hash %>"><%} %>
  </form>
  
+ <form action="" method="post" name="Targeting">
+ <input type = "hidden" name= "submittype" value="Targeting">
+ <input type = "hidden" name = "TargetHash">
+ </form>
  
  <div class="container">
  

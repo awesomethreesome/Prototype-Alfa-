@@ -49,6 +49,7 @@ public class MainProcedure extends ActionSupport {
 			temp = dataBase.selectNodebyPro(queryInput, true);
 		}
 		else {//default option is search by name
+			System.out.println("going in");
 			temp = dataBase.selectNodebyName(queryInput, true);
 		}
 		//security
@@ -175,13 +176,32 @@ public class MainProcedure extends ActionSupport {
 	//returns null when not found
 	//refresh neighborLists and directedWeb
 	public CharDesc get(String hash) throws SQLException {
-		int index = searchCurrentBuffer(hash);
+		//int index = searchCurrentBuffer(hash);
+		/*
 		if ( index == INT_INVALID )
 			return null;
+		*/
+		System.out.println("get hash:" + hash);
 		NodeRecord centralNode = loadCurrentBufferNeighborList(hash);
 		history.clear();///////////////////////////////////////////////need an initial push?
+		//security
+		if ( currentBuffer == null )
+			currentBuffer = new EditBuffer();
 		transcribeDAGList( centralNode );
-		return new CharDesc(centralNode);
+		
+		CharDesc tempCharDesc = new CharDesc(centralNode);
+		System.out.println("at the end of get: ");
+		System.out.println("CharDesc: " + tempCharDesc.hash);
+		System.out.println("CharDesc: " + tempCharDesc.name);
+		System.out.println(neighborList1);
+		System.out.println(neighborList2);
+		System.out.println(neighborList3);
+		System.out.println(directedWeb);
+		System.out.println(neighborList1.size());
+		System.out.println(neighborList2.size());
+		System.out.println(neighborList3.size());
+		System.out.println(directedWeb.size());
+		return tempCharDesc;
 	}
 	
 	//refresh historyList
@@ -236,6 +256,9 @@ public class MainProcedure extends ActionSupport {
 		temp = null;
 		while ( sr.next() ) {
 			temp = new ListItem();
+			
+			temp.setBack(sr.getString( 1 ));
+			temp.setFront(sr.getString( 5 ));
 			
 			searchList.add(temp);
 			temp = null;
@@ -404,6 +427,7 @@ public class MainProcedure extends ActionSupport {
 	 * @throws SQLException 
 	 */
 	private NodeRecord loadCurrentBufferNeighborList(  String hash  ) throws SQLException{
+		System.out.println("in the loadCurrentBufferNeighborList : hash is " + hash);
 		ResultSet temp = searchDB( hash );
 		NodeRecord centralNode = transcribeSingleRecord( temp );
 		
@@ -436,9 +460,11 @@ public class MainProcedure extends ActionSupport {
 	 * @throws SQLException 
 	 */
 	private void fetchfromDB( ArrayList<String> input, int x ) throws SQLException{
+		System.out.println("in fetchFromDB");
 		ResultSet temp = null;
 		for ( int k=0; k<input.size();k++ ){
 			if ( searchCurrentBuffer( input.get(k) ) == INT_INVALID){//non duplicate
+				System.out.println("times: " + k);
 				temp = searchDB(input.get(k));
 				NodeRecord tempRecord = new NodeRecord(transcribeSingleRecord( temp )); 
 				appendtoNeighborList( tempRecord, x );//set neighborListx
@@ -488,6 +514,7 @@ public class MainProcedure extends ActionSupport {
 	 * 3. notice that the hash code length 5
 	 */
 	private ArrayList<String> sprawl( NodeRecord center, boolean direction){
+		System.out.println("into the sprawl");
 		ArrayList<String> result = new ArrayList<String>();
 		result.clear();
 		String hashList = new String();
@@ -518,6 +545,7 @@ public class MainProcedure extends ActionSupport {
 	private ArrayList<DAG> transcribeDAGList( NodeRecord center ){
 		ArrayList<String> descendant = new ArrayList<String>();
 		int index = 0;
+		System.out.println("in transcribeDAGList, currentBuffer status: " + currentBuffer);
 		for ( int i=0; i<currentBuffer.size(); i++ ){
 			descendant = sprawl( currentBuffer.get(i), false );
 			DAG temp = new DAG();
@@ -533,6 +561,7 @@ public class MainProcedure extends ActionSupport {
 				temp.dst.add("goto: ");
 			}
 		}
+		System.out.println("directedWeb status: size: " + directedWeb.size());
 		return new ArrayList<DAG>(directedWeb);
 	}
 	

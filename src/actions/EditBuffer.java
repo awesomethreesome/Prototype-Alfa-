@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class EditBuffer {
 	/////blank constructor
-	EditBuffer(){
+	public EditBuffer(){
 		currentNet = new ArrayList<NodeRecord>();
 	}
 	/////copy constructor
@@ -70,6 +70,7 @@ public class EditBuffer {
 	}
 	
 	public int size(){
+		System.out.println("in EditBuffer: currentNet status: " + currentNet);
 		return currentNet.size();
 	}
 	
@@ -78,17 +79,17 @@ public class EditBuffer {
 	}
 	
 	public void clear(){
-		currentNet = null;
+		currentNet = new ArrayList<NodeRecord>();
 	}
 	
 	/////private variables
-	private List<NodeRecord> currentNet;
+	private ArrayList<NodeRecord> currentNet = new ArrayList<NodeRecord>();
 	
 	/////setter and getters 
-	public List<NodeRecord> getCurrentNet() {
+	public ArrayList<NodeRecord> getCurrentNet() {
 		return currentNet;
 	}
-	public void setCurrentNet(List<NodeRecord> currentNet) {
+	public void setCurrentNet(ArrayList<NodeRecord> currentNet) {
 		this.currentNet = currentNet;
 	}
 
