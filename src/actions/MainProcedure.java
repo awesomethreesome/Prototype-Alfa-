@@ -42,14 +42,19 @@ public class MainProcedure extends ActionSupport {
 	public ArrayList<ListItem> search( String queryInput, String queryType ) throws SQLException{
 		//queryType has 3 possible values{Name, Institution, Profession, }
 		ResultSet temp = null;
-		if ( queryType.equals("Institution") ) {
+		if ( "Institution".equals( queryType ) ) {
 			temp = dataBase.selectNodebyIns(queryInput, true);//search with ambiguity
 		}
-		else if ( queryType.equals("Profession") ) {
+		else if ( "Profession".equals(queryType) ) {
 			temp = dataBase.selectNodebyPro(queryInput, true);
 		}
 		else {//default option is search by name
 			temp = dataBase.selectNodebyName(queryInput, true);
+		}
+		//security
+		if (temp == null){
+			System.out.println("no result match");
+			return searchList;
 		}
 		transcribeSearchResult( temp );//now all possible node have been stored in searchList, which is a list of ListItem
 		return searchList;
