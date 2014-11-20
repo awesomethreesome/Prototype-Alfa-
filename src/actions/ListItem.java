@@ -13,8 +13,8 @@ public class ListItem {
 		this.back = back;
 	}
 	/////private variables
-	String front;
-	String back;
+	public String front;
+	public String back;
 	
 	/////setters and getters
 	public String getFront() {

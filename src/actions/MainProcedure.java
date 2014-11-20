@@ -548,6 +548,7 @@ public class MainProcedure extends ActionSupport {
 	public ArrayList<DAG> directedWeb = new ArrayList<DAG>();
 	
 	public String debugInfo = new String();
+	public NodeHash hashGenerator = null;
 	/////private variables
 	private DBManager dataBase = new DBManager();//
 	private final String passWord = "vorstellung";
@@ -557,7 +558,7 @@ public class MainProcedure extends ActionSupport {
 	private UserRecord currentUser = new UserRecord() ;//current user
 	private EditBuffer currentBuffer = new EditBuffer();
 	private HistoryList history = new HistoryList();
-	private static NodeHash hashGenerator = new NodeHash();
+	
 	
 	private ArrayList<NodeRecord> nextQueue = new ArrayList<NodeRecord>();
 	

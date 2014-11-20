@@ -1,7 +1,9 @@
 <%@ page language="java" import="java.util.*" import="actions.*" contentType="text/html; charset=UTF-8"
 %>
+    <jsp:useBean id="Generator" class="actions.NodeHash" scope="application"/>
     <jsp:useBean id="Model" class="actions.MainProcedure" scope="session"/>
 	<%
+		Model.hashGenerator = Generator;
 		String submit = request.getParameter("submittype");
 		String account = null;
 		String password = null;
@@ -27,7 +29,7 @@
 		}
 		else if(submit!=null && submit.equals("Search")) {
 			searchQuery = request.getParameter("Search");
-			Model.search(searchQuery,0);
+			Model.search(searchQuery,null);
 			expandSearchList = true;
 		}
 		else if(submit!=null && submit.equals("Edit")) {
@@ -757,9 +759,8 @@ if(acn!=null) document.LogIn.Account.value = acn;
          return edge.target
        })
        
-       sys.eachNode(function(node){
+       sys.eachNode(function(node) {
          if (node.data.shape=='dot') return // skip all but leafnodes
-
          var nowVisible = ($.inArray(node, children)>=0)
          var newAlpha = (nowVisible) ? 1 : 0
          var dt = (nowVisible) ? .5 : .5

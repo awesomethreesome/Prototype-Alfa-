@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class NodeHash {
 	/////constructor
-	NodeHash(){
+	public NodeHash(){
 		for (int i=0; i<length; i++){
 			nextHash[i] = '0';
 		}
@@ -54,7 +54,8 @@ public class NodeHash {
 	}
 	
 	private boolean digitIncrement( int i) throws Exception{//if needs to carry digit, return true
-		if ( i <= length){
+		if ( i >= length){
+			System.out.println("invalid hash index");
 			return false;
 		}
 		if ( (nextHash[i]<57 && nextHash[i]>=48) || (nextHash[i]<122 && nextHash[i]>=97) ){
@@ -76,7 +77,8 @@ public class NodeHash {
 	}
 	
 	/////private variable
-	private char[] nextHash;
+	
 	private static int length = 5;
+	private char[] nextHash = new char[length];
 	private int bitIndex;
 }
