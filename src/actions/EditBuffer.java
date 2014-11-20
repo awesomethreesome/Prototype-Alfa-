@@ -70,7 +70,6 @@ public class EditBuffer {
 	}
 	
 	public int size(){
-		System.out.println("in EditBuffer: currentNet status: " + currentNet);
 		return currentNet.size();
 	}
 	

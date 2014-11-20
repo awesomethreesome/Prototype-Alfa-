@@ -181,6 +181,10 @@ public class MainProcedure extends ActionSupport {
 		if ( index == INT_INVALID )
 			return null;
 		*/
+		neighborList1.clear();
+		neighborList2.clear();
+		neighborList3.clear();
+		directedWeb.clear();
 		System.out.println("get hash:" + hash);
 		NodeRecord centralNode = loadCurrentBufferNeighborList(hash);
 		history.clear();///////////////////////////////////////////////need an initial push?
@@ -190,13 +194,12 @@ public class MainProcedure extends ActionSupport {
 		transcribeDAGList( centralNode );
 		
 		CharDesc tempCharDesc = new CharDesc(centralNode);
+		boolean flag;
+		
 		System.out.println("at the end of get: ");
 		System.out.println("CharDesc: " + tempCharDesc.hash);
 		System.out.println("CharDesc: " + tempCharDesc.name);
-		System.out.println(neighborList1);
-		System.out.println(neighborList2);
-		System.out.println(neighborList3);
-		System.out.println(directedWeb);
+		
 		System.out.println(neighborList1.size());
 		System.out.println(neighborList2.size());
 		System.out.println(neighborList3.size());
@@ -447,7 +450,8 @@ public class MainProcedure extends ActionSupport {
 				
 			}
 			queue.clear();
-			queue = nextQueue;
+			queue = new ArrayList<NodeRecord>(nextQueue);
+			nextQueue.clear();
 		}
 		OrganizeNeighborList3();
 		return new NodeRecord( centralNode );
@@ -515,6 +519,9 @@ public class MainProcedure extends ActionSupport {
 	 */
 	private ArrayList<String> sprawl( NodeRecord center, boolean direction){
 		System.out.println("into the sprawl");
+		System.out.println("center hash: " + center.getKey());
+		System.out.println("center father: " + center.getFather());
+		System.out.println("center son: " + center.getSon());
 		ArrayList<String> result = new ArrayList<String>();
 		result.clear();
 		String hashList = new String();
@@ -525,11 +532,19 @@ public class MainProcedure extends ActionSupport {
 		else {
 			hashList = center.getFather();
 		}
-		while ( hashList.equals("") == false  ){
+		System.out.println("in sprawl: hashList: " + hashList);
+		//security
+		if ( hashList == null ){
+			return new ArrayList<String>(result);
+		}
+		while ( /*"".equals(hashList) == false*/hashList.length() >=5 ){
+			System.out.println("in sprawl while 1: hashList: " + hashList);
 			temp = hashList.substring(0, 4);
 			result.add(temp);
 			temp =null;
 			hashList = hashList.substring(5);
+			System.out.println("in sprawl while 2: hashList: " + hashList);
+			System.out.println("in sprawl while 2: hashList.length: " + hashList.length());
 		}
 		
 		return new ArrayList<String>(result);

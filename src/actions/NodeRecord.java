@@ -9,15 +9,15 @@ public class NodeRecord {
 	public NodeRecord(NodeRecord nodeRecord) {
 		// TODO Auto-generated constructor stub
 		key = nodeRecord.getKey();
-		userID = new String(nodeRecord.getUserID());
-		son = new String(nodeRecord.getSon());
+		userID = nodeRecord.getUserID();
+		son = nodeRecord.getSon();
 		setFather(nodeRecord.getFather());
-		name = new String(nodeRecord.getName());
+		name = nodeRecord.getName();
 		gender = nodeRecord.getGender();
 		setBirthDate(nodeRecord.getBirthDate());
-		profession = new String(nodeRecord.getProfession());
-		institution = new String(nodeRecord.getInstitution());
-		link = new String(nodeRecord.getLink());
+		profession = nodeRecord.getProfession();
+		institution = nodeRecord.getInstitution();
+		link = nodeRecord.getLink();
 		Bio = nodeRecord.getBio();
 	}
 	

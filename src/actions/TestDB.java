@@ -19,7 +19,7 @@ public class TestDB {
 		MainProcedure test = new MainProcedure();
 		
 		//test.search("Dooku", "");
-		test.get("00000");
+		test.get("30000");
         //request.setParameter("queryType", "Title");
         //request.setParameter("queryInput", "AutoMata Theory");
         //proxy = getActionProxy("SEARCH_QUERY"); 
@@ -28,8 +28,8 @@ public class TestDB {
         //String result = test.searchQuery();
 		
         //assertEquals(1, test.searchList.size());
-        assertEquals(0, test.neighborList1.size());
-        assertEquals(0, test.neighborList2.size());
+        assertEquals(2, test.neighborList1.size());
+        assertEquals(2, test.neighborList2.size());
         assertEquals(0, test.neighborList3.size());
         assertEquals(0, test.directedWeb.size());
         //assertEquals( 1, test.getBookSR().size());
