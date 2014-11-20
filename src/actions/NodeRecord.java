@@ -22,7 +22,7 @@ public class NodeRecord {
 	}
 	
 	public NodeRecord ( CharDesc cd){
-		key = null;
+		key = cd.hash;
 		userID = null;
 		son = null;
 		setFather(null);

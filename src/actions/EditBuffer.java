@@ -35,8 +35,9 @@ public class EditBuffer {
 		}
 	}
 	
-	public void addRecord( NodeRecord newRecord ){ 
-		currentNet.add(newRecord);
+	public void addRecord( NodeRecord newRecord ){
+		NodeRecord newRecord0 = new NodeRecord(newRecord);
+		currentNet.add(newRecord0);
 	}
 	
 	public void deleteRecord( String hash ){

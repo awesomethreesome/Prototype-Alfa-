@@ -169,13 +169,13 @@ public class MainProcedure extends ActionSupport {
 	
 	//returns null when not found
 	//refresh neighborLists and directedWeb
-	public CharDesc get(String hash) {////////////////////////////////////////////////////////////////////////////////////////////////////////
+	public CharDesc get(String hash) throws SQLException {
 		int index = searchCurrentBuffer(hash);
 		if ( index == INT_INVALID )
 			return null;
-		NodeRecord centralNode = loadCurrentBuffer(hash);
+		NodeRecord centralNode = loadCurrentBufferNeighborList(hash);
 		history.clear();///////////////////////////////////////////////need an initial push?
-		transcribeCurrentBuffer();
+		transcribeDAGList( centralNode );
 		return new CharDesc(centralNode);
 	}
 	
@@ -184,9 +184,12 @@ public class MainProcedure extends ActionSupport {
 		if ( !authorityCheck() )
 			return;
 		
-		NodeRecord target0 = getSource( target.hash );
-		if ( target0 == null )//not found
+		NodeRecord origin = getSource( target.hash );
+		if ( origin == null )//not found or has already been deleted 
 			return;
+		NodeRecord updater = new NodeRecord( target );
+		
+		NodeRecord target0 = edit_auxilary( updater, origin );
 		String modification = "edit node: " + target0.getName();
 		EditBuffer newBuffer = generateBuffer(target0, null);
 		history.pushBack(newBuffer, modification);
@@ -199,18 +202,15 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	//save changes to database
-	public void syncDB() {////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-		//
-		for (int i=0; i<currentBuffer.size(); i++){
-			
+	public void syncDB() throws SQLException {
+		//update all changes stored in history to DB
+		for (int i=0; i<history.size(); i++){//from the earliest to latest 
+			for ( int j=0; j<history.get(i).size(); j++){
+				String operation = history.ModRecord(i);
+				NodeRecord updater = new NodeRecord(history.get(i).get(j));
+				updateDB( updater, operation );
+			}
 		}
-		
-		//check whether there're delete operated
-		for (int j=0; j<history){
-			
-		}
-		
-		
 		//clear history
 		history.clear();
 	}
@@ -310,6 +310,9 @@ public class MainProcedure extends ActionSupport {
 		ResultSet temp = null;
 		NodeRecord temp2 = null;
 		if ( index != INT_INVALID ){//recently modified in buffer
+			if ( history.ModRecord(index).contains("delete") ){//the wanted node has been deleted 
+				return null;
+			}
 			for (int i=0; i<history.get(index).size(); i++){
 				temp2 = history.get(index).get(i);
 				if (temp2.getKey() == hash){
@@ -338,6 +341,41 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	
+	private void updateDB( NodeRecord updater, String operation ) throws SQLException{
+		if ( operation.contains("add") ){
+			dataBase.insertNode(updater.getKey(), updater.getUserID(), updater.getFather(), updater.getSon(), updater.getName(), 
+								updater.getGender(), updater.getBirthDate(), updater.getProfession(), 
+								updater.getInstitution(), updater.getLink(), updater.getBio());
+		}
+		else if ( operation.contains("delete") ){
+			dataBase.deleteNode(updater.getKey());
+		}
+		else if( operation.contains("sever") || operation.contains("link") || operation.contains("edit")){
+			dataBase.updateNode(updater.getKey(), updater.getName(), updater.getBirthDate(), 
+								updater.getProfession(), updater.getInstitution(), updater.getLink(), updater.getBio());
+		}
+		else
+			return;
+	}
+	
+	//update those variables that are not null in updatedRecord to temp
+	private NodeRecord edit_auxilary( NodeRecord updatedRecord,  NodeRecord origin ){
+		NodeRecord temp = new NodeRecord( origin );
+		
+		temp.setBio( (updatedRecord.getBio()==null?temp.getBio():updatedRecord.getBio() ) );
+		temp.setBirthDate( (updatedRecord.getBirthDate()==null?temp.getBirthDate():updatedRecord.getBirthDate() ) );
+		temp.setFather( (updatedRecord.getFather()==null?temp.getFather():updatedRecord.getFather() ) );
+		temp.setSon( (updatedRecord.getSon()==null?temp.getSon():updatedRecord.getSon() ) );
+		temp.setName( (updatedRecord.getName()==null?temp.getName():updatedRecord.getName() ) );
+		temp.setGender( (updatedRecord.getGender()==null?temp.getGender():updatedRecord.getGender() ) );
+		temp.setProfession( (updatedRecord.getProfession()==null?temp.getProfession():updatedRecord.getProfession() ) );
+		temp.setInstitution( (updatedRecord.getInstitution()==null?temp.getInstitution():updatedRecord.getInstitution() ) );
+		temp.setLink( (updatedRecord.getLink()==null?temp.getLink():updatedRecord.getLink() ) );
+		
+		return new NodeRecord(temp); 
+	}
+	
+	
 	private boolean authorityCheck(){
 		return authorized;
 	}
@@ -358,10 +396,111 @@ public class MainProcedure extends ActionSupport {
 	 * 1.load network into currentBuffer and neighborListx from DB 
 	 * 2.the net work consists of nodes who distance 3 unit from the central node
 	 * 3.return the central node   
+	 * @throws SQLException 
 	 */
-	private NodeRecord loadCurrentBufferNeighborList(  String hash  ){////////////////////////////////////
+	private NodeRecord loadCurrentBufferNeighborList(  String hash  ) throws SQLException{
+		ResultSet temp = searchDB( hash );
+		NodeRecord centralNode = transcribeSingleRecord( temp );
 		
+		ArrayList<NodeRecord> queue = new ArrayList<NodeRecord>();
+		ArrayList<String> ascendant = new ArrayList<String>(), descendant = new ArrayList<String>();
 		
+		queue.add(centralNode);
+		currentBuffer.clear();
+		nextQueue.clear();
+		for ( int i=0; i<3; i++ ){//distance at most 3
+			for ( int j=0; j<queue.size(); j++ ){
+				ascendant = sprawl( queue.get(j), true );
+				descendant = sprawl( queue.get(j), false );
+				
+				fetchfromDB( ascendant, i );
+				fetchfromDB( descendant, i );//currentBuffer and NeighborList-i and nextQueue shall yet be updated
+				
+			}
+			queue.clear();
+			queue = nextQueue;
+		}
+		OrganizeNeighborList3();
+		return new NodeRecord( centralNode );
+	}
+	
+	/**
+	 * description:
+	 * 1. check if nodes in input duplicate with that in currentBuffer
+	 * 2. push non-duplicate node to currentBuffer and NeighborListx and nextQueue
+	 * @throws SQLException 
+	 */
+	private void fetchfromDB( ArrayList<String> input, int x ) throws SQLException{
+		ResultSet temp = null;
+		for ( int k=0; k<input.size();k++ ){
+			if ( searchCurrentBuffer( input.get(k) ) == INT_INVALID){//non duplicate
+				temp = searchDB(input.get(k));
+				NodeRecord tempRecord = new NodeRecord(transcribeSingleRecord( temp )); 
+				appendtoNeighborList( tempRecord, x );//set neighborListx
+				currentBuffer.addRecord(tempRecord);//push to currentBuffer
+				NodeRecord tempRecord1 = new NodeRecord(tempRecord);
+				nextQueue.add(tempRecord1);//push to nextQueue
+			}
+		}	
+	}
+	
+	
+	private void appendtoNeighborList( NodeRecord newcomer, int i ){
+		ListItem temp = new ListItem(newcomer.getName(), newcomer.getKey());
+		if ( i == 0 ){
+			neighborList1.add(temp);
+		}
+		else if (i == 1){
+			neighborList2.add(temp);
+		}
+		else if (i == 2){
+			neighborList3.add(temp);
+		}
+		else
+			return;
+	}
+	
+	//add "goto" term to neighborList3 to meet the requirement of UI 
+	private void OrganizeNeighborList3(){
+		for(int i=0; i<neighborList1.size(); i++){
+			ListItem temp = new ListItem( "goto: "+neighborList1.get(i).getFront(), neighborList1.get(i).getBack() );
+			neighborList3.add(temp);
+		}
+		for(int j=0; j<neighborList2.size(); j++){
+			ListItem temp1 = new ListItem( "goto: "+neighborList2.get(j).getFront(), neighborList2.get(j).getBack() );
+			neighborList3.add(temp1);
+		}
+	}
+	
+	/**
+	 * 
+	 * @param center
+	 * @param direction
+	 * @return
+	 * description:
+	 * 1. find all the ascendant or the descendant( direction = true, ascendant)
+	 * 2. return in the form of ArrayList<String>, which is the list of hash code
+	 * 3. notice that the hash code length 5
+	 */
+	private ArrayList<String> sprawl( NodeRecord center, boolean direction){
+		ArrayList<String> result = new ArrayList<String>();
+		result.clear();
+		String hashList = new String();
+		String temp = null;
+		if ( direction ){//descendant
+			hashList = center.getSon();
+		}
+		else {
+			hashList = center.getFather();
+		}
+		while ( hashList.equals("") == false  ){
+			temp = hashList.substring(0, 4);
+			result.add(temp);
+			temp =null;
+			hashList = hashList.substring(5);
+		}
+		
+		return new ArrayList<String>(result);
 	}
 	
 	/**
@@ -371,8 +510,25 @@ public class MainProcedure extends ActionSupport {
 	 * 1.update directedWeb with neighborListx
 	 * 2.return DAGList
 	 */
-	private ArrayList<DAG> transcribeDAGList(){///////////////////////////////////////////////////
-		
+	private ArrayList<DAG> transcribeDAGList( NodeRecord center ){
+		ArrayList<String> descendant = new ArrayList<String>();
+		int index = 0;
+		for ( int i=0; i<currentBuffer.size(); i++ ){
+			descendant = sprawl( currentBuffer.get(i), false );
+			DAG temp = new DAG();
+			temp.src = currentBuffer.get(i).getName();
+			for ( int j=0; j<descendant.size(); j++ ){
+				index = searchCurrentBuffer( descendant.get(j) );
+				if (index == INT_INVALID) 
+					continue;
+				String tempName = new String(currentBuffer.get(index).getName());
+				temp.dst.add( tempName );
+			}
+			if ( currentBuffer.get(i).getKey() != center.getKey() ){
+				temp.dst.add("goto: ");
+			}
+		}
+		return new ArrayList<DAG>(directedWeb);
 	}
 	
 	/////public constant
@@ -385,12 +541,13 @@ public class MainProcedure extends ActionSupport {
 	/////public variable
 	public boolean authorized = false;
 	public ArrayList<ListItem> searchList = new ArrayList<ListItem>();
-	public ArrayList<ListItem> historyList = new ArrayList<ListItem>();;
-	public ArrayList<ListItem> neighborList1 = new ArrayList<ListItem>();;
-	public ArrayList<ListItem> neighborList2 = new ArrayList<ListItem>();;
-	public ArrayList<ListItem> neighborList3 = new ArrayList<ListItem>();;
-	public ArrayList<DAG> directedWeb = new ArrayList<DAG>();;
+	public ArrayList<ListItem> historyList = new ArrayList<ListItem>();
+	public ArrayList<ListItem> neighborList1 = new ArrayList<ListItem>();
+	public ArrayList<ListItem> neighborList2 = new ArrayList<ListItem>();
+	public ArrayList<ListItem> neighborList3 = new ArrayList<ListItem>();
+	public ArrayList<DAG> directedWeb = new ArrayList<DAG>();
 	
+	public String debugInfo = new String();
 	/////private variables
 	private DBManager dataBase = new DBManager();//
 	private final String passWord = "vorstellung";
@@ -402,6 +559,7 @@ public class MainProcedure extends ActionSupport {
 	private HistoryList history = new HistoryList();
 	private static NodeHash hashGenerator = new NodeHash();
 	
+	private ArrayList<NodeRecord> nextQueue = new ArrayList<NodeRecord>();
 	
 	/////all setters and getters	
 	public long getSerialversionuid() {
