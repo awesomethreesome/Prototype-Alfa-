@@ -551,9 +551,32 @@
         	<fieldset>
           		<legend>Character Description</legend>
    				<div class="span12">
-					<label class="control-label offset1"><legend>Name</legend>></label>
+					<label class="control-label offset1"><legend>Name</legend></label>
         			<div class="control-label offset1">
         			<%if(hash != null) {%> <legend> <%=Model.get(hash).name%> </legend> <%} %>
+            		</div></div>
+            		<div class="span12">
+            		<label class="control-label offset1"><legend>Gender</legend></label>
+        			<div class="control-label offset1">
+        			<%if(hash != null) {%> <legend> <%=Model.get(hash).gender%> </legend> <%} %>
+            		</div>
+            		</div>
+            		<div class="span12">
+            		<label class="control-label offset1"><legend>BirthDate</legend></label>
+        			<div class="control-label offset1">
+        			<%if(hash != null) {%> <legend> <%=Model.get(hash).birthDate%> </legend> <%} %>
+            		</div>
+            		</div>
+            		<div class="span12">
+            		<label class="control-label offset1"><legend>Profession</legend></label>
+        			<div class="control-label offset1">
+        			<%if(hash != null) {%> <legend> <%=Model.get(hash).profession%> </legend> <%} %>
+            		</div>
+            		</div>
+            		<div class="span12">
+            		<label class="control-label offset1"><legend>Institution</legend></label>
+        			<div class="control-label offset1">
+        			<%if(hash != null) {%> <legend> <%=Model.get(hash).institution%> </legend> <%} %>
             		</div>
         		</div>
         		<div class="span6"><a class="btn btn-inverse" onclick="EditInfoOK()">Save Changes</a></div>
@@ -1008,7 +1031,7 @@ if(acn!=null) document.LogIn.Account.value = acn;
 			   '<%=Model.neighborList2.get(i).front%>': {color:"grey", shape:"dot", alpha:1, mass:2},
 			   <%}%>
 			   <%for(int i=0; i<Model.neighborList3.size(); i++) {%>
-			   '<%=Model.neighborList3.get(i).front%>': {color:"grey", alpha:0, link:'?TargetHash=<%=Model.neighborList3.get(i).back%>'},
+			   '<%=Model.neighborList3.get(i).front%>': {color:"grey", alpha:0, link:'javascript:FormTargeting("<%=Model.neighborList3.get(i).back%>")'},//'?TargetHash=<%=Model.neighborList3.get(i).back%>'},
 			   <%}%>
 			   '<%=charDesc.name%>': {color:"black", shape:"dot", alpha:1, mass:5}
 		   },

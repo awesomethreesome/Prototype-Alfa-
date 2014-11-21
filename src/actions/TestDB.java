@@ -19,7 +19,7 @@ public class TestDB {
 		MainProcedure test = new MainProcedure();
 		
 		//test.search("Dooku", "");
-		test.get("30000");
+		test.get("00000");
         //request.setParameter("queryType", "Title");
         //request.setParameter("queryInput", "AutoMata Theory");
         //proxy = getActionProxy("SEARCH_QUERY"); 
