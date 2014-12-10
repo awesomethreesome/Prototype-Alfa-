@@ -19,6 +19,8 @@ public class CharDesc {
 	public String hash;
 	public String name = "John 117";
 	public String gender;
+	public String birthYear;
+	public String birthMonth;
 	public String birthDate;
 	public String profession;
 	public String institution;
