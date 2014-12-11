@@ -27,7 +27,7 @@ public class DBManager {
             result = ps.executeQuery();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to select user.");
 			return null;
 		}
 		return result;
@@ -42,7 +42,7 @@ public class DBManager {
             result = ps.executeQuery();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to select root.");
 			return null;
 		}
 		return result;
@@ -56,7 +56,7 @@ public class DBManager {
             result = ps.executeQuery();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to select by hash.");
 			return null;
 		}
 		return result;
@@ -65,14 +65,14 @@ public class DBManager {
     public final ResultSet selectNodebyName( String name, boolean ambiguity ) {
         try{
         	String SQLStatement = ambiguity?SELECT_NODE_BY_NAME_AMIBIGUITY_SQL:SELECT_NODE_BY_NAME_SQL;
-        	String inqueryParameter = ambiguity?(name + AMBIGUITY_TERM):name;
+        	String inqueryParameter = ambiguity?(AMBIGUITY_TERM + name + AMBIGUITY_TERM):name;
 			PreparedStatement ps = dbConnection.prepareStatement(SQLStatement);
 			ps.setString(1, inqueryParameter);
 			
             result = ps.executeQuery();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to select by name.");
 			return null;
 		}
 		return result;
@@ -81,14 +81,14 @@ public class DBManager {
     public final ResultSet selectNodebyIns( String ins, boolean ambiguity ){
         try{
         	String SQLStatement = ambiguity?SELECT_NODE_BY_INS_AMIBIGUITY_SQL:SELECT_NODE_BY_INS_SQL;
-        	String inqueryParameter = ambiguity?(ins + AMBIGUITY_TERM):ins;
+        	String inqueryParameter = ambiguity?(AMBIGUITY_TERM + ins + AMBIGUITY_TERM):ins;
 			PreparedStatement ps = dbConnection.prepareStatement(SQLStatement);
 			ps.setString(1, inqueryParameter);
 			
             result = ps.executeQuery();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to select by ins.");
 			return null;
 		}
 		return result;
@@ -97,14 +97,14 @@ public class DBManager {
     public final ResultSet selectNodebyPro( String pro, boolean ambiguity ){
         try{
         	String SQLStatement = ambiguity?SELECT_NODE_BY_PRO_AMIBIGUITY_SQL:SELECT_NODE_BY_PRO_SQL;
-        	String inqueryParameter = ambiguity?(pro + AMBIGUITY_TERM):pro;
+        	String inqueryParameter = ambiguity?(AMBIGUITY_TERM + pro + AMBIGUITY_TERM):pro;
 			PreparedStatement ps = dbConnection.prepareStatement(SQLStatement);
 			ps.setString(1, inqueryParameter);
 			
             result = ps.executeQuery();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to select by pro.");
 			return null;
 		}
 		return result;
@@ -119,7 +119,7 @@ public class DBManager {
             result = ps.executeQuery();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to select by father.");
 			return null;
 		}
 		return result;
@@ -156,7 +156,7 @@ public class DBManager {
             ps.executeUpdate();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to update.");
+			System.out.println("ERROR: fail to update father.");
 			return false;
 		}
 		return true;
@@ -172,7 +172,7 @@ public class DBManager {
             ps.executeUpdate();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to update.");
+			System.out.println("ERROR: fail to update bio.");
 			return false;
 		}
 		return true;
@@ -188,7 +188,7 @@ public class DBManager {
             ps.executeUpdate();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to update.");
+			System.out.println("ERROR: fail to update gender.");
 			return false;
 		}
 		return true;
@@ -205,7 +205,7 @@ public class DBManager {
             ps.executeUpdate();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to update.");
+			System.out.println("ERROR: fail to update son.");
 			return false;
 		}
 		return true;
@@ -220,7 +220,7 @@ public class DBManager {
 			ps.executeUpdate();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to delete book.");
 			return false;
 		}
 		return true;
@@ -247,7 +247,7 @@ public class DBManager {
             ps.executeUpdate();
 
 		}catch ( Exception e ) {
-			System.out.println("ERROR: fail to insert book.");
+			System.out.println("ERROR: fail to insert node.");
 			return false;
 		}
 		return true;
@@ -302,7 +302,8 @@ public class DBManager {
 		}
 	}
 	
-	private void connectionCheck() throws Exception {
+	/////protected methods
+	protected void connectionCheck() throws Exception {
 		if ( dbConnection == null ){
 			Exception e = new Exception("connection with database has not yet established.");
 			throw e;
@@ -363,8 +364,8 @@ public class DBManager {
 	private final String createDB = "create database " + dbName;
 	private final String useDB = "use database " + dbName;
 	
-	private Connection dbConnection = null;
-	private Statement statement = null;
-	private ResultSet result = null;
+	protected Connection dbConnection = null;
+	protected Statement statement = null;
+	protected ResultSet result = null;
 	
 }

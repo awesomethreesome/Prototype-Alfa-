@@ -72,28 +72,30 @@ public class MainProcedure extends ActionSupport {
 		return temp;
 	}
 	
+	public String getLinkInfo( String source, String destiny ) throws SQLException{
+		//scan the history
+		NodeRecord srcNode = getSource( source );
+		ArrayList<String> srcDescendant = sprawl( srcNode, false );
+		String period = "";
+		for ( int i=0; i<srcDescendant.size(); i++ ){
+			if ( srcDescendant.get(i).equals(destiny) ){
+				period = transcribeLinkInfo( dataBase.selectLink(source, destiny) );
+				break;
+			}
+		}
+		return period;
+	}
+	
 	//returns true when success, false otherwise.
 	//refresh historyList
 	// two inputs are all hash code
-	public boolean link(String teacher, String student) throws SQLException {
+	public boolean link(String teacher, String student, String period) throws SQLException {
 		if ( !authorityCheck() )
 			return false;
-		NodeRecord teacherSource = getSource( teacher );
-		NodeRecord studentSource = getSource( student );
-		if ( teacherSource == null || studentSource == null){//fail to find one or both node 
-			return false;
-		}
+		ArrayList<NodeRecord> ModifiedNodes = changeRelation( teacher, student, true );
+		String modification = "link" +ModifiedNodes.get(0).getName()+ "as" +ModifiedNodes.get(1).getName()+ "'s teacher during " + period;
 		
-		NodeRecord teacherRecord = new NodeRecord( teacherSource );
-		NodeRecord studentRecord = new NodeRecord( studentSource );
-		//set new relation link
-		String newSon = teacherRecord.getSon() + student;
-		String newFather = studentRecord.getFather() + teacher; 
-		teacherRecord.setSon(newSon);
-		studentRecord.setFather(newFather);
-		
-		String modification = "link" +teacherRecord.getName()+ "as" +studentRecord.getName()+ "'s teacher";
-		EditBuffer newBuffer = generateBuffer(teacherRecord, studentRecord);
+		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
 		history.pushBack(newBuffer, modification);
 		return true;
 	}
@@ -103,25 +105,11 @@ public class MainProcedure extends ActionSupport {
 	public boolean sever(String teacher, String student) throws SQLException {
 		if ( !authorityCheck() )
 			return false;
-		NodeRecord teacherSource = getSource( teacher );
-		NodeRecord studentSource = getSource( student );
-		if ( teacherSource == null || studentSource == null){//fail to find one or both node 
-			return false;
-		}
+		ArrayList<NodeRecord> ModifiedNodes = changeRelation( teacher, student, false );
+		String modification = "sever " +ModifiedNodes.get(0).getName()+ "and" +ModifiedNodes.get(1).getName();
 		
-		NodeRecord teacherRecord = new NodeRecord( teacherSource );
-		NodeRecord studentRecord = new NodeRecord( studentSource );
-		//set new relation link
-		String newSon = teacherRecord.getSon().replaceAll(student, "");
-		String newFather = studentRecord.getFather().replaceAll(teacher, ""); 
-		teacherRecord.setSon(newSon);
-		studentRecord.setFather(newFather);
-		
-		String modification = "sever " +teacherRecord.getName()+ "and" +studentRecord.getName();
-		EditBuffer newBuffer = generateBuffer( teacherRecord, studentRecord );
+		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
 		history.pushBack(newBuffer, modification);
-		//currentBuffer.updateRecord(teacher, teacherRecord);
-		//currentBuffer.updateRecord(student, studentRecord);
 		return true;
 	}
 	
@@ -146,7 +134,10 @@ public class MainProcedure extends ActionSupport {
 		NodeRecord temp = new NodeRecord( hashGenerator.generateHash(),currentUser.getUserID(), son, father, 
 										  name, gender,birthDate, pro, ins, link, bio );
 		String modification = "Add node: " + temp.getName();
-		EditBuffer newBuffer = generateBuffer(temp, null);
+		
+		ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();
+		ModifiedNodes.add( new NodeRecord(temp) );
+		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
 		history.pushBack(newBuffer, modification);
 		return temp.getKey();
 	}
@@ -168,7 +159,23 @@ public class MainProcedure extends ActionSupport {
 		
 		NodeRecord source = getSource(Hash);
 		String modification = "delete node: " + source.getName();
-		EditBuffer newBuffer = generateBuffer( new NodeRecord(source), null );
+	
+		ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();	
+		//delete all related links
+		ArrayList<String> ascendant = sprawl( source, true );
+		ArrayList<String> descendant = sprawl( source, false );
+		ArrayList<NodeRecord> temp = new ArrayList<NodeRecord>(); 
+		for ( int i=0; i<ascendant.size(); i++ ){
+			temp = changeRelation( ascendant.get(i), Hash, false );
+			ModifiedNodes.add( new NodeRecord(temp.get(0)) );//push the teachers of 'Hash' into ModifiedNodes
+		}
+		for ( int j=0; j<descendant.size(); j++ ){
+			temp = changeRelation( Hash, descendant.get(j), false);
+			ModifiedNodes.add( new NodeRecord(temp.get(1)) );//push the students of 'Hash' into ModifiedNodes
+		}
+		//generate buffer
+		ModifiedNodes.add( new NodeRecord(source) );
+		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
 		history.pushBack(newBuffer, modification);
 		return true;
 	}
@@ -191,7 +198,15 @@ public class MainProcedure extends ActionSupport {
 		//security
 		if ( currentBuffer == null )
 			currentBuffer = new EditBuffer();
+		//security
+		if ( centralNode == null ){//fatal error
+			CharDesc errorCharDesc = new CharDesc();
+			errorCharDesc.hash = "fatal error: target node does not exist";
+			return errorCharDesc;
+		}
 		transcribeDAGList( centralNode );
+		
+		//synchronize DAG with editBuffer
 		
 		CharDesc tempCharDesc = new CharDesc(centralNode);
 		
@@ -218,7 +233,10 @@ public class MainProcedure extends ActionSupport {
 		
 		NodeRecord target0 = edit_auxilary( updater, origin );
 		String modification = "edit node: " + target0.getName();
-		EditBuffer newBuffer = generateBuffer(target0, null);
+		
+		ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();
+		ModifiedNodes.add(target0);
+		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
 		history.pushBack(newBuffer, modification);
 		
 	}
@@ -238,9 +256,15 @@ public class MainProcedure extends ActionSupport {
 				updateDB( updater, operation );
 			}
 		}
+		updateLinkTable();
 		//clear history
 		history.clear();
 	}
+	
+	public boolean findPath( String srcHash, String desHash ){
+		
+	}
+	
 	
 	/////private methods
 	/**
@@ -300,6 +324,15 @@ public class MainProcedure extends ActionSupport {
 		return temp;
 	}
 	
+	private String transcribeLinkInfo( ResultSet sr ) throws SQLException {
+		String Info = "";
+		while( sr.next() ){
+			Info = sr.getString(3);
+		}
+		sr.beforeFirst();
+		return Info;
+	}
+	
 	private ResultSet searchDB( String hash ){
 		ResultSet temp = null;
 		temp = dataBase.selectNodebyHash(hash);
@@ -313,8 +346,8 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	private int searchHistory( String hash ){
-		for ( int i=history.size()-1; i>=0; i++ ){//search the history in the reversed direction to get latest changes
-			for ( int j=0; j<history.get(i).size();j++ ){
+		for ( int i=history.size()-1; i>=0; i-- ){//search the history in the reversed direction to get latest changes
+			for ( int j=history.get(i).size()-1; j>=0; j-- ){
 				if ( history.get(i).get(j).getKey() == hash ){
 					return i;
 				}
@@ -335,6 +368,7 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	//for edit, delete, link and sever operation
+	//get newest record from history or DB
 	private NodeRecord getSource( String hash ) throws SQLException{
 		int index = searchHistory( hash );
 		ResultSet temp = null;
@@ -361,12 +395,12 @@ public class MainProcedure extends ActionSupport {
 		}
 	}
 	
-	//if there is only one node changed, set  node2 = null
-	private EditBuffer generateBuffer( NodeRecord node1, NodeRecord node2 ){
+	//accept an list of modified nodes
+	private EditBuffer generateBuffer( ArrayList<NodeRecord> ModifiedNodeList){
 		EditBuffer newBuffer = new EditBuffer();
-		newBuffer.addRecord(node1);
-		if ( node2 != null )
-			newBuffer.addRecord(node2);
+		for ( int i=0; i<ModifiedNodeList.size(); i++ ){
+			newBuffer.addRecord( new NodeRecord( ModifiedNodeList.get(i) ) );
+		}
 		return new EditBuffer(newBuffer);
 	}
 	
@@ -386,6 +420,32 @@ public class MainProcedure extends ActionSupport {
 		}
 		else
 			return;
+	}
+	
+	private void updateLinkTable(){////////////////////////////////////////////////////////////////////
+		NodeRecord teacher = new NodeRecord(), student = new NodeRecord();
+		for (int i=0; i<history.size(); i++){
+			for (int j=0; j<history.get(i).size(); j++ ){
+				if ( history.ModRecord(i).contains("delete")){
+					
+				}
+				else if ( history.ModRecord(i).contains("sever") ){
+					teacher = history.get(i).get(0);//potential hazard
+					student = history.get(i).get(1);
+					dataBase.deleteLink(teacher.getKey(), student.getKey());
+				}
+				else if ( history.ModRecord(i).contains("link") ){
+					teacher = history.get(i).get(0);//potential hazard
+					student = history.get(i).get(1);
+					String period = new String();
+					int index = history.ModRecord(i).indexOf("'s teacher during ");
+					int startIndex = index+"'s teacher during ".length(); 
+					period = history.ModRecord(i).substring( startIndex );
+					dataBase.insertLink( teacher.getKey(), student.getKey(), period );
+				}
+			}
+		}
+		
 	}
 	
 	//update those variables that are not null in updatedRecord to temp
@@ -430,9 +490,12 @@ public class MainProcedure extends ActionSupport {
 	 */
 	private NodeRecord loadCurrentBufferNeighborList(  String hash  ) throws SQLException{
 		System.out.println("in the loadCurrentBufferNeighborList : hash is " + hash);
-		ResultSet temp = searchDB( hash );
-		NodeRecord centralNode = transcribeSingleRecord( temp );
 		
+		NodeRecord centralNode = getSource( hash );
+		if (centralNode == null){//fatal error, node does not exist
+			System.out.println("fatal error in loadCurrentBufferNeighborList, node does not exist");
+			return null;
+		}
 		ArrayList<NodeRecord> queue = new ArrayList<NodeRecord>();
 		ArrayList<String> ascendant = new ArrayList<String>(), descendant = new ArrayList<String>();
 		
@@ -445,8 +508,8 @@ public class MainProcedure extends ActionSupport {
 				ascendant = sprawl( queue.get(j), true );
 				descendant = sprawl( queue.get(j), false );
 				
-				fetchfromDB( ascendant, i );
-				fetchfromDB( descendant, i );//currentBuffer and NeighborList-i and nextQueue shall yet be updated
+				fetchNewest( ascendant, i );
+				fetchNewest( descendant, i );//currentBuffer and NeighborList-i and nextQueue shall yet be updated
 				
 			}
 			queue.clear();
@@ -461,16 +524,21 @@ public class MainProcedure extends ActionSupport {
 	 * description:
 	 * 1. check if nodes in input duplicate with that in currentBuffer
 	 * 2. push non-duplicate node to currentBuffer and NeighborListx and nextQueue
+	 * 3. nodes which has been deleted shall not push into 'nextqueue'
+	 * 4. 
 	 * @throws SQLException 
 	 */
-	private void fetchfromDB( ArrayList<String> input, int x ) throws SQLException{
-		System.out.println("in fetchFromDB");
-		ResultSet temp = null;
+	private void fetchNewest( ArrayList<String> input, int x ) throws SQLException{
+		System.out.println("in fetchNewest");
 		for ( int k=0; k<input.size();k++ ){
 			if ( searchCurrentBuffer( input.get(k) ) == INT_INVALID){//non duplicate
 				System.out.println("times: " + k);
-				temp = searchDB(input.get(k));
-				NodeRecord tempRecord = new NodeRecord(transcribeSingleRecord( temp )); 
+	
+				NodeRecord tempRecord = getSource( input.get(k) );
+				if ( tempRecord == null ){//deleted or not exist
+					System.out.println("'getSource()' failure in fetchNewest() ");
+					continue;
+				}
 				appendtoNeighborList( tempRecord, x );//set neighborListx
 				currentBuffer.addRecord(tempRecord);//push to currentBuffer
 				NodeRecord tempRecord1 = new NodeRecord(tempRecord);
@@ -582,6 +650,46 @@ public class MainProcedure extends ActionSupport {
 		directedWeb = new ArrayList<DAG>(tempDirectedWeb);//DAG is transfered by reference
 		return new ArrayList<DAG>(directedWeb);
 	}
+	/**
+	 * 
+	 * @param teacher
+	 * @param student
+	 * @param linkFlag
+	 * @return
+	 * description:
+	 * 1. operate link or sever on given nodes, linkFlag = true stands for link
+	 * 2. returns a ArrayList<NodeRecord>, if is called by link() or sever(), first entry of the ArrayList is newTeacher
+	 * @throws SQLException 
+	 */
+	private ArrayList<NodeRecord> changeRelation( String teacher, String student, boolean linkFlag ) throws SQLException{
+		NodeRecord teacherSource = getSource( teacher );
+		NodeRecord studentSource = getSource( student );
+		if ( teacherSource == null || studentSource == null){//fail to find one or both node
+			System.out.println("error: in changeRelation(): fail to locate targeting node(s)");
+			return null;
+		}
+		
+		NodeRecord teacherRecord = new NodeRecord( teacherSource );
+		NodeRecord studentRecord = new NodeRecord( studentSource );
+		//set new relation link
+		if ( !linkFlag ){
+			String newSon = teacherRecord.getSon().replaceAll(student, "");
+			String newFather = studentRecord.getFather().replaceAll(teacher, ""); 
+			teacherRecord.setSon(newSon);
+			studentRecord.setFather(newFather);
+		}
+		else {
+			String newSon = teacherRecord.getSon() + student;
+			String newFather = studentRecord.getFather() + teacher; 
+			teacherRecord.setSon(newSon);
+			studentRecord.setFather(newFather);
+		}
+		
+		ArrayList<NodeRecord> ModifiedNodeList = new ArrayList<NodeRecord>();
+		ModifiedNodeList.add( new NodeRecord(teacherRecord) );
+		ModifiedNodeList.add( new NodeRecord(studentRecord) );
+		return ModifiedNodeList;
+	}
 	
 	/////public constant
 	public static int INT_INVALID = -1;
@@ -601,8 +709,9 @@ public class MainProcedure extends ActionSupport {
 	
 	public String debugInfo = new String();
 	public NodeHash hashGenerator = null;
+	
 	/////private variables
-	private DBManager dataBase = new DBManager();//
+	private LinkDB dataBase = new LinkDB();//
 	private final String passWord = "vorstellung";
 	private final String userName = "wille"; 
 	private static String inputPassword = "vorstellung", inputUserName = "wille";

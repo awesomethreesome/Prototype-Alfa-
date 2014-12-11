@@ -9,7 +9,7 @@
 		String password = null;
 		String rememberStr = null;
 		String searchQuery = null;
-		boolean logedIn = false;
+		boolean logedIn = Model.authorized;
 		boolean rememberMe = false;
 		boolean expandSearchList = false;
 		boolean edit = false;
@@ -27,6 +27,9 @@
 		rememberStr = request.getParameter("RememberMe");
 			}
 		}
+		else if(submit!=null && submit.equals("LogOut")) {
+			logedIn = Model.authorized = false;
+		}
 		else if(submit!=null && submit.equals("Search")) {
 			searchQuery = request.getParameter("Search");
 			Model.search(searchQuery,null);
@@ -34,9 +37,20 @@
 		}
 		else if(submit!=null && submit.equals("Edit")) {
 			edit = true;
+			charDesc = new CharDesc();
+			charDesc.hash = hash;
+			charDesc.name = request.getParameter("Name");
+			charDesc.birthDate = request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear");
+			charDesc.institution = request.getParameter("Institution");
+			Model.edit(charDesc);
 		}
-		if(hash!=null)
+		
+		if(hash!=null) {
 			charDesc = Model.get(hash);
+			charDesc.birthYear = charDesc.birthDate.substring(0, 4);
+			charDesc.birthMonth = charDesc.birthDate.substring(5, 7);
+			charDesc.birthDate = charDesc.birthDate.substring(8, 10);
+		}
 	%>
 <!DOCTYPE html>
 <html lang="en">
@@ -50,7 +64,7 @@
     <link href="css/font-awesome.min.css" rel="stylesheet">
     <link href="css/bootswatch.css" rel="stylesheet">
 	<!-- Functions stay here! -->
-	<script type="text/javascript" src="http://use.typekit.com/mxh7kqd.js"></script>
+	<!--<script type="text/javascript" src="http://use.typekit.com/mxh7kqd.js"></script>-->
 	<script language="javascript" type="text/javascript">
 	var SaveBufferTimer = 0;
 	function SaveBuffer() {
@@ -79,7 +93,34 @@
 		setTimeout("SaveBuffer();", 100);
 	}
 	function EditInfoOK() {
-		document.EditInfo.submit();
+		document.EditInfo.gender.value = document.EditInfo.selectlist.value;
+		if(parseInt(document.EditInfo.BirthYear.value)>=1900 && parseInt(document.EditInfo.BirthYear.value)<=2014) {
+			document.EditInfo.BirthYear.value = "" + parseInt(document.EditInfo.BirthYear.value);
+			if(parseInt(document.EditInfo.BirthMonth.value)>=1 && parseInt(document.EditInfo.BirthMonth.value)<=12) {
+				if(parseInt(document.EditInfo.BirthMonth.value)<10)
+				document.EditInfo.BirthMonth.value = "0" + parseInt(document.EditInfo.BirthMonth.value);
+				else
+					document.EditInfo.BirthMonth.value = "" + parseInt(document.EditInfo.BirthMonth.value);
+				var date = 31;
+				if(parseInt(document.EditInfo.BirthMonth.value) == 4 || parseInt(document.EditInfo.BirthMonth.value) == 6 ||
+						parseInt(document.EditInfo.BirthMonth.value) == 9 ||parseInt(document.EditInfo.BirthMonth.value) == 12)
+					date = 30;
+				if(parseInt(document.EditInfo.BirthMonth.value)==2) {
+					if((parseInt(document.EditInfo.BirthYear.value)%4)==0 && parseInt(document.EditInfo.BirthYear.value)!=1900)
+						date = 29;
+					else date = 28;
+				}
+				}
+				if(parseInt(document.EditInfo.BirthDate.value)>=1 && parseInt(document.EditInfo.BirthDate.value)<=date) {
+					if(parseInt(document.EditInfo.BirthDate.value)<10)
+						document.EditInfo.BirthDate.value = "0" + parseInt(document.EditInfo.BirthDate.value);
+					else
+						document.EditInfo.BirthDate.value = "" + parseInt(document.EditInfo.BirthDate.value);
+					document.EditInfo.submit();
+					return;
+				}
+		}
+		ShowAlert("Invalid format of date!");
 	}
 	function ShowSaveButton() {
 		$("#SaveBufferButton").fadeIn(600); 
@@ -385,6 +426,10 @@
 	function FormSearch() {
 		document.Search.submit();
 	}
+	function LogOut() {
+		document.Back2History.submittype.value = "LogOut";
+		document.Back2History.submit();
+	}
 	<%if(logedIn && rememberStr!=null && rememberStr.equals("true")) {%>
 	setCookie('acn', '<%=account%>', 0);
 	setCookie('psd', '<%=password%>', 0);
@@ -409,14 +454,19 @@
         <ul class="nav" id="main-menu-left">
           <li><a onclick="pageTracker._link(this.href); return false;" href="#">News</a></li>
           <li><a id="swatch-link" href="#">Forum</a></li>
+          <%if(logedIn) {%>
           <li class="dropdown">
           <a class="dropdown-toggle" data-toggle="dropdown" href="#" onclick="WriteHistoryList()">History <b class="caret"></b></a>
           	<ul class="dropdown-menu" id="HistoryList">
             </ul>
           </li>
+          <%} %>
           <li class="dropdown" id="SaveBufferButton" style="display:none">
             <a class="dropdown-toggle" data-toggle="dropdown" onclick="SaveBuffer()" href="javascript:void(0);" >Save </a>
           </li>
+          <%if(logedIn) {%>
+          <li><a  href="javascript:LogOut()">Log out</a></li>
+          <%} %>
         </ul>
 	   </div>
 	   <div class="span12" id="SaveBufferDiv" style="display:none;">
@@ -451,6 +501,7 @@
  
  
    <div class="row">
+   <%if(logedIn) {%>
     <div class="span6">
 	 <h3 id="tabs">Storage</h3>
       <ul class="nav nav-tabs">
@@ -501,6 +552,9 @@
       </div>
       </div>
       <div class="span6">
+      <%}else {%>
+      <div class="span12">
+      <%} %>
         <h3>Search</h3>
         		<form class="well form-search" action="" method="post" name="Search">
         		<input type="text" class="input-medium search-query" name="Search" <%if(expandSearchList) {%>value="<%=searchQuery%>" <%} %>>
@@ -530,6 +584,7 @@
   	   
   	<div class="row">
     	<div class="span10 offset1">
+    	<%if(!logedIn) {%>
 			<form class="well form-search" action="" method="post" name="LogIn">
 				<h4>Log in</h4>
         		<input type="text" class="input-large" placeholder="Account" name="Account">
@@ -547,43 +602,74 @@
               	</label>
               	<%if(hash!=null) {%><input type = "hidden" name = "TargetHash" value="<%=hash %>"><%} %>
        	 	</form>
+       	 	<%} %>
+       	 	<%if(hash != null) {%>
 			<form class="form-horizontal well" method="post" name="EditInfo">
         	<fieldset>
           		<legend>Character Description</legend>
    				<div class="span12">
+					
+					<%if(!logedIn) {%>
 					<label class="control-label offset1"><legend>Name</legend></label>
         			<div class="control-label offset1">
-        			<%if(hash != null) {%> <legend> <%=Model.get(hash).name%> </legend> <%} %>
-            		</div></div>
-            		<div class="span12">
-            		<label class="control-label offset1"><legend>Gender</legend></label>
-        			<div class="control-label offset1">
-        			<%if(hash != null) {%> <legend> <%=Model.get(hash).gender%> </legend> <%} %>
+        			 <legend> <%=charDesc.name%>  (<%=charDesc.gender%>)</legend> 
             		</div>
             		</div>
-            		<div class="span12">
+            		<%}else{ %>
+            		<label>Name:</label>
+            		<input type="text" class="input-large" value="<%=charDesc.name%>" name="CharName">
+            		<label>Gender:</label>
+              			<select  name="selectlist" value="<%=charDesc.gender%>">
+                		<option>Male</option>
+                		<option>Female</option>
+              		</select>
+              		</div>
+            		<%} %>
+            		<br><div class="span12">
+            		<%if(!logedIn) {%>
             		<label class="control-label offset1"><legend>BirthDate</legend></label>
         			<div class="control-label offset1">
-        			<%if(hash != null) {%> <legend> <%=Model.get(hash).birthDate%> </legend> <%} %>
+        			<legend> <%=charDesc.birthYear+"-"+charDesc.birthMonth+"-"+charDesc.birthDate%> </legend>
             		</div>
+            		<%}else{%>
+            		<label>BirthDate:</label>
+            		<input type="text" class="input-large" value="<%=charDesc.birthYear%>" name="BirthYear">-
+            		<input type="text" class="input-large" value="<%=charDesc.birthMonth%>" name="BirthMonth">-
+            		<input type="text" class="input-large" value="<%=charDesc.birthDate%>" name="BirthDate">
+            		<%} %>
             		</div>
-            		<div class="span12">
+            		<br><div class="span12">
+            		<%if(!logedIn) {%>
             		<label class="control-label offset1"><legend>Profession</legend></label>
         			<div class="control-label offset1">
-        			<%if(hash != null) {%> <legend> <%=Model.get(hash).profession%> </legend> <%} %>
+        			<legend> <%=charDesc.profession%> </legend>
             		</div>
+            		<%}else{%>
+            		<label>Profession:</label>
+            		<input type="text" class="input-large" value="<%=charDesc.profession%>" name="Profession">
+            		<%} %>
             		</div>
-            		<div class="span12">
+            		<br><div class="span12">
+            		<%if(!logedIn) {%>
             		<label class="control-label offset1"><legend>Institution</legend></label>
         			<div class="control-label offset1">
-        			<%if(hash != null) {%> <legend> <%=Model.get(hash).institution%> </legend> <%} %>
+        			<legend> <%=charDesc.institution%> </legend>
             		</div>
+            		<%}else{%>
+            		<label>Institution:</label>
+            		<input type="text" class="input-large" value="<%=charDesc.profession%>" name="Institution">
+            		<br>
+            		<%} %>
         		</div>
+        		<%if(logedIn) {%>
+        		<br>
         		<div class="span6"><a class="btn btn-inverse" onclick="EditInfoOK()">Save Changes</a></div>
+        		<%} %>
         	</fieldset>
-        	<input type="hidden" value=" " name="TargetHash">
+        	<input type="hidden" value="" name="gender">
         	<input type="hidden" value="Edit" name="submittype">
         </form>
+         <%} %>
         </div>
        </div>	
 	
@@ -597,8 +683,6 @@
 <script src="js/bootstrap.min.js"></script>
 <script src="js/bootswatch.js"></script>
 <script language="javascript" type="text/javascript">
-WriteHistoryList();
-WriteStorage();
 <%if(expandSearchList) {%>
 	ShowSearchList();
 <%
@@ -609,6 +693,10 @@ FlashSaveButton();
 }%>
 if(psd!=null) document.LogIn.Password.value = psd;
 if(acn!=null) document.LogIn.Account.value = acn;
+<%if(logedIn){%>
+WriteHistoryList();
+WriteStorage();
+<%}%>
 </script>
 
 <%if(hash != null && charDesc!=null) {
