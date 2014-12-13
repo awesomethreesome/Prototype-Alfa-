@@ -13,7 +13,10 @@
 		boolean rememberMe = false;
 		boolean expandSearchList = false;
 		boolean edit = false;
+		boolean addFail =false;
 		CharDesc charDesc = null;
+		boolean linkSucess = false;
+		boolean severSucess = false;
 		String hash = request.getParameter("TargetHash");
 		if(submit!=null && submit.equals("Back2History")) {
 			Model.back2History(request.getParameter("HistoryHash"));
@@ -42,9 +45,47 @@
 			charDesc.name = request.getParameter("Name");
 			charDesc.birthDate = request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear");
 			charDesc.institution = request.getParameter("Institution");
+			charDesc.profession = request.getParameter("Profession");
 			Model.edit(charDesc);
 		}
-		
+		else if(submit!=null && submit.equals("New")) {
+			edit = true;
+			charDesc = new CharDesc();
+			charDesc.name = request.getParameter("Name");
+			charDesc.birthDate = request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear");
+			charDesc.institution = request.getParameter("Institution");
+			charDesc.profession = request.getParameter("Profession");
+			String addRst = Model.add(charDesc);
+			if(addRst==null) {
+				addFail = true;
+				charDesc.birthYear = charDesc.birthDate.substring(0, 4);
+				charDesc.birthMonth = charDesc.birthDate.substring(5, 7);
+				charDesc.birthDate = charDesc.birthDate.substring(8, 10);
+			}
+			else
+				hash = addRst;
+		}
+		else if(submit!=null && submit.equals("DeleteChar")) {
+			Model.delete(hash);
+		}
+		else if(submit!=null && submit.equals("Link")) {
+			linkSucess = Model.link2(request.getParameter("LinkSource"), request.getParameter("LinkTarget"), request.getParameter("LinkDate"));
+		}
+		else if(submit!=null && submit.equals("Sever")) {
+			severSucess = Model.sever2(request.getParameter("LinkSource"), request.getParameter("LinkTarget"));
+		}
+		else if(submit!=null && submit.equals("LinkAddSon")) {
+			linkSucess = Model.link(hash, request.getParameter("linkhash"), request.getParameter("LinkDate"));
+		}
+		else if(submit!=null && submit.equals("LinkAddFather")) {
+			linkSucess = Model.link(request.getParameter("linkhash"), hash, request.getParameter("LinkDate"));
+		}
+		else if(submit!=null && submit.equals("SeverAsSon")) {
+			severSucess = Model.sever(hash, request.getParameter("linkhash"));
+		}
+		else if(submit!=null && submit.equals("SeverAsFather")) {
+			severSucess = Model.sever(request.getParameter("linkhash"), hash);
+		}
 		if(hash!=null) {
 			charDesc = Model.get(hash);
 			charDesc.birthYear = charDesc.birthDate.substring(0, 4);
@@ -94,33 +135,50 @@
 	}
 	function EditInfoOK() {
 		document.EditInfo.gender.value = document.EditInfo.selectlist.value;
+		if (!(CheckDate()&&CheckName())) return;
+		document.EditInfo.submit();	
+	}
+	function CheckName() {
+		 var regexp = /[a-zA-Z]/;
+		 if(!regexp.test(document.EditInfo.Name.value)) {
+			 ShowAlert("Invalid format of name. English letters only.");
+			 }
+		 return regexp.test(document.EditInfo.Name.value);
+	}
+	function CheckDate() {
 		if(parseInt(document.EditInfo.BirthYear.value)>=1900 && parseInt(document.EditInfo.BirthYear.value)<=2014) {
-			document.EditInfo.BirthYear.value = "" + parseInt(document.EditInfo.BirthYear.value);
-			if(parseInt(document.EditInfo.BirthMonth.value)>=1 && parseInt(document.EditInfo.BirthMonth.value)<=12) {
-				if(parseInt(document.EditInfo.BirthMonth.value)<10)
-				document.EditInfo.BirthMonth.value = "0" + parseInt(document.EditInfo.BirthMonth.value);
+		document.EditInfo.BirthYear.value = "" + parseInt(document.EditInfo.BirthYear.value);
+		if(parseInt(document.EditInfo.BirthMonth.value)>=1 && parseInt(document.EditInfo.BirthMonth.value)<=12) {
+			if(parseInt(document.EditInfo.BirthMonth.value)<10)
+			document.EditInfo.BirthMonth.value = "0" + parseInt(document.EditInfo.BirthMonth.value);
+			else
+				document.EditInfo.BirthMonth.value = "" + parseInt(document.EditInfo.BirthMonth.value);
+			var date = 31;
+			if(parseInt(document.EditInfo.BirthMonth.value) == 4 || parseInt(document.EditInfo.BirthMonth.value) == 6 ||
+					parseInt(document.EditInfo.BirthMonth.value) == 9 ||parseInt(document.EditInfo.BirthMonth.value) == 12)
+				date = 30;
+			if(parseInt(document.EditInfo.BirthMonth.value)==2) {
+				if((parseInt(document.EditInfo.BirthYear.value)%4)==0 && parseInt(document.EditInfo.BirthYear.value)!=1900)
+					date = 29;
+				else date = 28;
+			}
+			}
+			if(parseInt(document.EditInfo.BirthDate.value)>=1 && parseInt(document.EditInfo.BirthDate.value)<=date) {
+				if(parseInt(document.EditInfo.BirthDate.value)<10)
+					document.EditInfo.BirthDate.value = "0" + parseInt(document.EditInfo.BirthDate.value);
 				else
-					document.EditInfo.BirthMonth.value = "" + parseInt(document.EditInfo.BirthMonth.value);
-				var date = 31;
-				if(parseInt(document.EditInfo.BirthMonth.value) == 4 || parseInt(document.EditInfo.BirthMonth.value) == 6 ||
-						parseInt(document.EditInfo.BirthMonth.value) == 9 ||parseInt(document.EditInfo.BirthMonth.value) == 12)
-					date = 30;
-				if(parseInt(document.EditInfo.BirthMonth.value)==2) {
-					if((parseInt(document.EditInfo.BirthYear.value)%4)==0 && parseInt(document.EditInfo.BirthYear.value)!=1900)
-						date = 29;
-					else date = 28;
-				}
-				}
-				if(parseInt(document.EditInfo.BirthDate.value)>=1 && parseInt(document.EditInfo.BirthDate.value)<=date) {
-					if(parseInt(document.EditInfo.BirthDate.value)<10)
-						document.EditInfo.BirthDate.value = "0" + parseInt(document.EditInfo.BirthDate.value);
-					else
-						document.EditInfo.BirthDate.value = "" + parseInt(document.EditInfo.BirthDate.value);
-					document.EditInfo.submit();
-					return;
-				}
-		}
-		ShowAlert("Invalid format of date!");
+					document.EditInfo.BirthDate.value = "" + parseInt(document.EditInfo.BirthDate.value);
+				return true;
+			}
+	}
+	ShowAlert("Invalid format of date!");
+	return false;
+	}
+	function AddNew() {
+		document.EditInfo.gender.value = document.EditInfo.selectlist.value;
+		if (!(CheckDate()&&CheckName())) return;
+		document.EditInfo.submittype.value = "New";
+		document.EditInfo.submit();	
 	}
 	function ShowSaveButton() {
 		$("#SaveBufferButton").fadeIn(600); 
@@ -203,7 +261,7 @@
 	function Write2Storage(storageID, elemHash, elemName) {
 		var elemID = storageID + '_' + elemHash;
 		var writeElem = '<a class="dropdown-toggle" data-toggle="dropdown" href="#">'+elemName+'<b class="caret"></b></a>';
-		writeElem = writeElem + '<ul class="dropdown-menu"> <li><a href="#">Add as student</a></li> <li><a href="#">Add as teacher</a></li>';
+		writeElem = writeElem + '<ul class="dropdown-menu"> <li><a href="javascript:AddAsSon('+ "'" + elemHash +"'" + ')">Add as student</a></li> <li><a href="javascript:AddAsFather('+ "'" + elemHash +"'" + ')">Add as teacher</a></li> <li><a href="javascript:DeleteAsSon('+"'" +  elemHash +"'" + ')">Delete as student</a></li> <li><a href="javascript:DeleteAsFather('+ "'" + elemHash +"'" + ')">Delete as teacher</a></li>';
 		writeElem = writeElem + '<li class="divider"></li><li><a href="javascript:DeleteFromStorage(';
 		writeElem = writeElem + "'" + elemID +"'" + ')">Remove</a></li></ul>';
 		var storage = document.getElementById(storageID);
@@ -430,6 +488,38 @@
 		document.Back2History.submittype.value = "LogOut";
 		document.Back2History.submit();
 	}
+	function DeleteChar() {
+		document.EditInfo.sumittype="DeleteChar";
+		document.EditIfo.submit();
+	}
+	function CreateLink() {
+		document.LinkSever.submittype = "Link";
+		document.LinkSever.submit();
+	}
+	function DeleteLink() {
+		document.LinkSever.submittype = "Sever";
+		document.LinkSever.submit();
+	}
+	function AddAsSon(sonHash) {
+		document.LinkSever.submittype = "LinkAddSon";
+		document.LinkSever.linkhash = sonHash;
+		document.LinkSever.submit();
+	}
+	function AddAsFather(fatherHash) {
+		document.LinkSever.submittype = "LinkAddFarther";
+		document.LinkSever.linkhash = fatherHash;
+		document.LinkSever.submit();
+	}
+	function DeleteAsSon(sonHash) {
+		document.LinkSever.submittype = "SeverAsSon";
+		document.LinkSever.linkhash = sonHash;
+		document.LinkSever.submit();
+	}
+	function DeleteAsFather(fatherHash) {
+		document.LinkSever.submittype = "SeverAsFarther";
+		document.LinkSever.linkhash = fatherHash;
+		document.LinkSever.submit();
+	}
 	<%if(logedIn && rememberStr!=null && rememberStr.equals("true")) {%>
 	setCookie('acn', '<%=account%>', 0);
 	setCookie('psd', '<%=password%>', 0);
@@ -502,6 +592,21 @@
  
    <div class="row">
    <%if(logedIn) {%>
+   <form action="" method="post" name="LinkSever" class="form-horizontal well">
+   
+   <div class="span12">
+   Source: <input type="text" class="input-large" value="<%if(hash!=null) {%><%=charDesc.name%><%} %>" name="LinkSource"> &emsp;
+   Target: <input type="text" class="input-large" value="<%if(hash!=null) {%><%=charDesc.name%><%} %>" name="LinkTarget"> &emsp;
+   Time period: <input type="text" class="input-large" placeholder="example:year/month/date-now" name="LinkDate">&emsp;
+   <a class="btn btn-inverse" onclick="CreateLink()">Create Link</a>&emsp;
+   <a class="btn btn-inverse" onclick="DeleteLink()">Delete Link</a>
+   <input type="hidden" name="submittype" value="">
+   <input type="hidden" name="TargetHash" value="<%=hash%>">
+   <input type="hidden" name="linkhash" value="">
+   
+   </div>
+   </form>
+  
     <div class="span6">
 	 <h3 id="tabs">Storage</h3>
       <ul class="nav nav-tabs">
@@ -518,6 +623,7 @@
           	<li class="nav-header">Section list A</li>
          	<li class="divider" id = "ListSectionA_Last"></li>
          	<li><a href="javascript:DeleteList('ListSectionA')">Delete List</a></li>
+         	<%if(hash!=null) {%><li><a href="javascript:Add2Storage('ListSectionA', '<%=hash%>', '<%=charDesc.name%>')">Add to list A</a></li><%} %>
         	</ul>
       		</div>
           </div>
@@ -527,6 +633,7 @@
         	<li class="nav-header">Section list B</li>
          	<li class="divider" id = "ListSectionB_Last"></li>
          	<li><a href="javascript:DeleteList('ListSectionB')">Delete List</a></li>
+         	<%if(hash!=null) {%><li><a href="javascript:Add2Storage('ListSectionB', '<%=hash%>', '<%=charDesc.name%>')">Add to list B</a></li><%} %>
         	</ul>
       		</div>
           </div>
@@ -536,6 +643,7 @@
           	<li class="nav-header">Section list C</li>
          	<li class="divider" id = "ListSectionC_Last"></li>
          	<li><a href="javascript:DeleteList('ListSectionC')">Delete List</a></li>
+         	<%if(hash!=null) {%><li><a href="javascript:Add2Storage('ListSectionC', '<%=hash%>', '<%=charDesc.name%>')">Add to list C</a></li><%} %>
         	</ul>
       		</div>
           </div>
@@ -545,6 +653,7 @@
           	<li class="nav-header">Section list D</li>
          	<li class="divider" id = "ListSectionD_Last"></li>
          	<li><a href="javascript:DeleteList('ListSectionD')">Delete List</a></li>
+         	<%if(hash!=null) {%><li><a href="javascript:Add2Storage('ListSectionD', '<%=hash%>', '<%=charDesc.name%>')">Add to list D</a></li><%} %>
         	</ul>
       		</div>
           </div>
@@ -659,12 +768,51 @@
             		<label>Institution:</label>
             		<input type="text" class="input-large" value="<%=charDesc.profession%>" name="Institution">
             		<br>
-            		<%} %>
+            		<%}%>
         		</div>
         		<%if(logedIn) {%>
-        		<br>
-        		<div class="span6"><a class="btn btn-inverse" onclick="EditInfoOK()">Save Changes</a></div>
+        		<div class="span8"><br></div>
+        		<div class="span8"><a class="btn btn-inverse" onclick="EditInfoOK()">Save Changes</a>&emsp;
+        		<a class="btn btn-inverse" onclick="AddNew()">Add as new</a> &emsp;
+        		<a class="btn btn-inverse" onclick="DeleteChar()">Delete</a></div> &emsp;
         		<%} %>
+        	</fieldset>
+        	<input type="hidden" value="" name="gender">
+        	<input type="hidden" value="Edit" name="submittype">
+        </form>
+         <%} else if(logedIn){%>
+			<form class="form-horizontal well" method="post" name="EditInfo">
+        	<fieldset>
+          		<legend>Character Description</legend>
+   				<div class="span12">
+            		<label>Name:</label>
+            		<input type="text" class="input-large" value="" name="CharName">
+            		<label>Gender:</label>
+              			<select  name="selectlist">
+                		<option>Male</option>
+                		<option>Female</option>
+              		</select>
+              		</div>
+            		<br><div class="span12">
+            		<label>BirthDate:</label>
+            		<input type="text" class="input-large" value="" name="BirthYear">-
+            		<input type="text" class="input-large" value="" name="BirthMonth">-
+            		<input type="text" class="input-large" value="" name="BirthDate">
+            		</div>
+            		<br><div class="span12">
+            		<label>Profession:</label>
+            		<input type="text" class="input-large" value="" name="Profession">
+            		</div>
+            		<br><div class="span12">
+            		<label>Institution:</label>
+            		<input type="text" class="input-large" value="" name="Institution">
+            		<br>
+        		</div>
+        		
+        		<div class="span8"><br></div>
+        		<div class="span8">
+        		<a class="btn btn-inverse" onclick="AddNew()">Add as new</a> &emsp;
+        		</div>
         	</fieldset>
         	<input type="hidden" value="" name="gender">
         	<input type="hidden" value="Edit" name="submittype">
@@ -683,6 +831,10 @@
 <script src="js/bootstrap.min.js"></script>
 <script src="js/bootswatch.js"></script>
 <script language="javascript" type="text/javascript">
+
+<%if (addFail){%>
+	ShowAlert("Error: Duplicated name <%=charDesc.name%>. Try another please.");
+<%}%>
 <%if(expandSearchList) {%>
 	ShowSearchList();
 <%
@@ -818,7 +970,7 @@ WriteStorage();
            }
        })
        sys.eachNode(function(node, pt){
-           var w = Math.max(20, 20+gfx.textWidth(node.name) )
+           var w = Math.max(20, 20+gfx.textWidth(node.name))
            if (node.data.alpha===0) return
            if (node.data.shape=='dot'){
              gfx.oval(pt.x-w/2, pt.y-w/2, w, w, {fill:node.data.color, alpha:node.data.alpha})
@@ -1131,7 +1283,7 @@ WriteStorage();
 			sys.addEdge("<%=Model.directedWeb.get(i).src%>","<%=Model.directedWeb.get(i).dst.get(j)%>", "<%=Model.directedWeb.get(i).info.get(j)%>")
    <%}}%>
    sys.renderer = Renderer("#sitemap")
-   sys.graft(theUI)
+   //sys.graft(theUI)
    
    var nav = Nav("#nav")
    $(sys.renderer).bind('navigate', nav.navigate)

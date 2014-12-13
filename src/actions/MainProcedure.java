@@ -100,19 +100,27 @@ public class MainProcedure extends ActionSupport {
 		return true;
 	}
 	
-	public boolean link2( String teaName, String stuName, String period ){////////////////////////////////to do
+	public boolean link2( String teaName, String stuName, String period ) throws SQLException{////////////////////////////////to do
+		if ( !authorityCheck() )
+			return false;
 		//get hash
+		String teaHash = new String(), stuHash = new String();
+		teaHash = getSourceHashbyName( teaName );
+		stuHash = getSourceHashbyName( stuName );
 		
-		
-		return true;
+		return link( teaHash, stuHash, period );
 	}
 	
 	
-	public boolean sever2(String teaName, String stuName, String period){////////////////////////////////to do
+	public boolean sever2(String teaName, String stuName ) throws SQLException{////////////////////////////////to do
+		if ( !authorityCheck() )
+			return false;
 		//get hash
+		String teaHash = new String(), stuHash = new String();
+		teaHash = getSourceHashbyName( teaName );
+		stuHash = getSourceHashbyName( stuName );
 		
-		
-		return true;
+		return sever( teaHash, stuHash );
 	}
 	
 	//returns true when success, false otherwise.
@@ -447,6 +455,32 @@ public class MainProcedure extends ActionSupport {
 			}
 			temp2 = transcribeSingleRecord(temp);
 			return new NodeRecord(temp2);
+		}
+	}
+	//get the hash code of given name 
+	private String getSourceHashbyName( String sourceName ) throws SQLException{
+		int index = searchHistorybyName( sourceName );
+		ResultSet temp = null;
+		NodeRecord temp2 = null;
+		if ( index != INT_INVALID ){//recently modified in buffer
+			if ( history.ModRecord(index).contains("delete") ){//the wanted node has been deleted 
+				return null;
+			}
+			for (int i=0; i<history.get(index).size(); i++){
+				temp2 = history.get(index).get(i);
+				if (temp2.getName() == sourceName){
+					break;
+				}
+			}
+			return temp2.getKey();
+		}
+		else{ 
+			temp = searchDBbyName( sourceName );
+			if ( temp == null ){//not in buffer or DB
+				return null;
+			}
+			temp2 = transcribeSingleRecord(temp);
+			return temp2.getKey();
 		}
 	}
 	

@@ -21,7 +21,7 @@ public class TestDB {
 		//stage 1
 		
 		//test.search("Dooku", "");
-		test.get("00000");
+		test.get("30000");
         //request.setParameter("queryType", "Title");
         //request.setParameter("queryInput", "AutoMata Theory");
         //proxy = getActionProxy("SEARCH_QUERY"); 
