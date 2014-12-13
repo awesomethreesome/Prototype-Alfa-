@@ -100,6 +100,21 @@ public class MainProcedure extends ActionSupport {
 		return true;
 	}
 	
+	public boolean link2( String teaName, String stuName, String period ){////////////////////////////////to do
+		//get hash
+		
+		
+		return true;
+	}
+	
+	
+	public boolean sever2(String teaName, String stuName, String period){////////////////////////////////to do
+		//get hash
+		
+		
+		return true;
+	}
+	
 	//returns true when success, false otherwise.
 	//refresh historyList
 	public boolean sever(String teacher, String student) throws SQLException {
@@ -115,24 +130,23 @@ public class MainProcedure extends ActionSupport {
 	
 	//returns the hash of newly-added
 	//refresh historyList
-	public String add( String name, String gender, String birthDate, String son, String father, 
-			           String pro, String ins, String link, String bio ) {
+	public String add( CharDesc newInput ) {///////////////////////////////
 		if ( !authorityCheck() )//check authority
-			return "";	
+			return null;	
 		//if there's no delete history and has record in DB, abandon operation
-		int historyIndex = searchHistorybyName(name);
-		ResultSet tempSet= searchDBbyName(name);
+		int historyIndex = searchHistorybyName( newInput.name );
+		ResultSet tempSet= searchDBbyName( newInput.name );
 		if ( historyIndex == INT_INVALID && tempSet != null ){//no record in history but in DB
-			return "FAILURE";
+			return null;
 		}
 		else if (historyIndex != INT_INVALID && tempSet != null){//in DB in history but not been deleted || not in DB, but was not deleted in history  
 			String modRecord = history.ModRecord(historyIndex);
 			if ( modRecord.contains("delete") == false)
-				return "FAILURE";
+				return null;
 		}
 		
-		NodeRecord temp = new NodeRecord( hashGenerator.generateHash(),currentUser.getUserID(), son, father, 
-										  name, gender,birthDate, pro, ins, link, bio );
+		NodeRecord temp = new NodeRecord( hashGenerator.generateHash(),currentUser.getUserID(), ""/*son*/, ""/*father*/, 
+										  newInput.name, newInput.gender,newInput.birthDate, newInput.profession, newInput.institution, newInput.link, newInput.bio );
 		String modification = "Add node: " + temp.getName();
 		
 		ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();
@@ -204,16 +218,14 @@ public class MainProcedure extends ActionSupport {
 			errorCharDesc.hash = "fatal error: target node does not exist";
 			return errorCharDesc;
 		}
-		transcribeDAGList( centralNode );
-		
-		//synchronize DAG with editBuffer
+		transcribeDAGList( centralNode,true );
+		//getDAGLinkInfo();
 		
 		CharDesc tempCharDesc = new CharDesc(centralNode);
 		
 		System.out.println("at the end of get: ");
 		System.out.println("CharDesc: " + tempCharDesc.hash);
 		System.out.println("CharDesc: " + tempCharDesc.name);
-		
 		System.out.println(neighborList1.size());
 		System.out.println(neighborList2.size());
 		System.out.println(neighborList3.size());
@@ -261,8 +273,51 @@ public class MainProcedure extends ActionSupport {
 		history.clear();
 	}
 	
-	public boolean findPath( String srcHash, String desHash ){
-		
+	public boolean findPath( String srcHash, String desHash ) throws SQLException{
+		ArrayList<String> visited = new ArrayList<String>();
+		ArrayList<String> descendant = new ArrayList<String>();
+		ArrayList<String> queue = new ArrayList<String>(), nextQueue_ = new ArrayList<String>();
+		NodeRecord temp = new NodeRecord();
+		boolean found = false;
+		//BP algorithm
+		queue.add(srcHash);
+		visited.add(srcHash);
+		while ( !queue.isEmpty() ){
+			for  ( int i=0; i<queue.size(); i++ ){
+				temp = getSource( queue.get(i) );
+				//security
+				if ( temp == null ){
+					System.out.println("error in finPath: fail to getSource of " + queue.get(i));
+					continue;
+				}
+				descendant = sprawl( temp, false );
+				//check desHash
+				found = descendant.contains(desHash);
+				if ( found ){
+					break;
+				}
+				//check visited and add to nectQueue 
+				for ( int k=0; k<descendant.size(); k++){
+					if ( !visited.contains( descendant.get(k) ) ){
+						nextQueue_.add( descendant.get(k) );
+						visited.add( descendant.get(k) );
+					}
+				}
+				
+			}
+			if ( found ){
+				break;
+			}
+			queue.clear();
+			queue = new ArrayList<String>( nextQueue_ );
+		}
+		//back trace and form neighborListx and directedDAG
+		if ( found ){
+			tracePath( srcHash, desHash, visited );
+			fitPathtoNeighborListDAG(srcHash, desHash);
+			return true;
+		}
+		return false;
 	}
 	
 	
@@ -441,7 +496,12 @@ public class MainProcedure extends ActionSupport {
 					int index = history.ModRecord(i).indexOf("'s teacher during ");
 					int startIndex = index+"'s teacher during ".length(); 
 					period = history.ModRecord(i).substring( startIndex );
-					dataBase.insertLink( teacher.getKey(), student.getKey(), period );
+					if ( dataBase.selectLink( teacher.getKey(), student.getKey() ) == null ){
+						dataBase.insertLink( teacher.getKey(), student.getKey(), period );
+					}
+					else {
+						dataBase.updateLink( teacher.getKey(), student.getKey(), period );
+					}
 				}
 			}
 		}
@@ -585,6 +645,7 @@ public class MainProcedure extends ActionSupport {
 	 * 2. return in the form of ArrayList<String>, which is the list of hash code
 	 * 3. notice that the hash code length 5
 	 */
+	@SuppressWarnings("unused")
 	private ArrayList<String> sprawl( NodeRecord center, boolean direction){
 		System.out.println("into the sprawl");
 		System.out.println("center hash: " + center.getKey());
@@ -594,7 +655,11 @@ public class MainProcedure extends ActionSupport {
 		result.clear();
 		String hashList = new String();
 		String temp = null;
-		if ( !direction ){//descendant
+		if ( center == null ){//security
+			System.out.println("fatal error in sprawl: center == null");
+			return result;
+		}
+		else if ( !direction ){//descendant
 			hashList = center.getSon();
 		}
 		else {
@@ -624,11 +689,14 @@ public class MainProcedure extends ActionSupport {
 	 * description:
 	 * 1.update directedWeb with neighborListx
 	 * 2.return DAGList
+	 * 3. flag = true indicates that it's called by 'get(...)', otherwise 'tracePath(...)'
+	 * @throws SQLException 
 	 */
-	private ArrayList<DAG> transcribeDAGList( NodeRecord center ){
+	private ArrayList<DAG> transcribeDAGList( NodeRecord center, boolean flag/*added in 12.13.2014*/ ) throws SQLException{
 		ArrayList<DAG> tempDirectedWeb = new ArrayList<DAG>();
 		ArrayList<String> descendant = new ArrayList<String>();
 		int index = 0;
+		String linkInfo = new String();
 		System.out.println("in transcribeDAGList, currentBuffer status: " + currentBuffer);
 		for ( int i=0; i<currentBuffer.size(); i++ ){
 			descendant = sprawl( currentBuffer.get(i), false );
@@ -640,9 +708,14 @@ public class MainProcedure extends ActionSupport {
 					continue;
 				String tempName = new String(currentBuffer.get(index).getName());
 				temp.dst.add( tempName );
+				//added in 12.13.2014
+				linkInfo = getLinkInfo(  currentBuffer.get(i).getKey(), currentBuffer.get(index).getKey());
+				temp.info.add(linkInfo);
+				//added in 12.13.2014
 			}
-			if ( currentBuffer.get(i).getKey() != center.getKey() ){
+			if ( currentBuffer.get(i).getKey() != center.getKey() || flag == false ){
 				temp.dst.add("goto: " + currentBuffer.get(i).getName());
+				temp.info.add("");
 			}
 			tempDirectedWeb.add(temp);
 		}
@@ -691,6 +764,99 @@ public class MainProcedure extends ActionSupport {
 		return ModifiedNodeList;
 	}
 	
+	
+	/**
+	 * 
+	 * @param src
+	 * @param des
+	 * @param visited
+	 * description:
+	 * 1. trace the path and set neighborListx and directedDAG
+	 * @throws SQLException 
+	 * 
+	 */
+	private void tracePath( String src, String des, ArrayList<String> visited ) throws SQLException{
+		//DP
+		path.clear();
+		found = false;
+		tracePath_aux( src, des, visited );
+	}
+	
+	/**
+	 * 
+	 * @param current
+	 * @param des
+	 * @param visited
+	 * description:
+	 * 1.auxiliary method for tracePath, operating recursive searching among visited nodes
+	 * 2.path stored in stack 'path'
+	 * @throws SQLException 
+	 */
+	private void tracePath_aux( String current, String des, ArrayList<String> visited ) throws SQLException{
+		if ( found ){
+			return;
+		}
+		else if ( current == des ){
+			found = true;
+			path.push(current);
+			return;
+		}
+		path.push(current);
+		
+		//get descendant
+		ArrayList<String> descendant = new ArrayList<String>();
+		descendant = sprawl( getSource(current), false );
+		//recursive search
+		for ( int i=0; i<descendant.size(); i++ ){
+			if ( visited.contains(descendant.get(i)) == true ){
+				tracePath_aux( descendant.get(i), des, visited);
+			}
+		}
+		
+		if (!found){
+			path.pop();
+		}
+	}
+	
+	/**
+	 * description:
+	 * 1. if path exist(found = true), fit nodes in the path into neighborListx and directedWeb
+	 * @throws SQLException 
+	 */
+	private void fitPathtoNeighborListDAG( String src, String des ) throws SQLException{
+		if ( found ){
+			neighborList1.clear();
+			neighborList2.clear();
+			neighborList3.clear();
+			directedWeb.clear();
+			
+			//store the path into currentBuffer to fit the interface of 'transcribeDAGList(...)'
+			currentBuffer.clear();
+			NodeRecord temp = new NodeRecord();
+			while ( !path.empty() ){
+				temp = getSource( path.peek() );
+				currentBuffer.addRecord( new NodeRecord( temp ) );
+				path.pop();
+			}
+			
+			//set neighborListx: all(except src and des) shall be added into neighborList2
+			temp = getSource( src );
+			appendtoNeighborList(temp, 0);
+			temp = getSource( des );
+			appendtoNeighborList(temp, 0);
+			for ( int i=0; i<currentBuffer.size(); i++ ){
+				temp = currentBuffer.get(i);
+				if ( temp.getKey() != src && temp.getKey() != des){
+					appendtoNeighborList( new NodeRecord(temp), 1 );
+				}
+			}
+			
+			//set directedDAG
+			transcribeDAGList( new NodeRecord(), false );
+		}
+	}
+	
+	
 	/////public constant
 	public static int INT_INVALID = -1;
 	public static double DOUBLE_INVALID = -1.0;
@@ -720,8 +886,10 @@ public class MainProcedure extends ActionSupport {
 	private EditBuffer currentBuffer = new EditBuffer();
 	private HistoryList history = new HistoryList();
 	
-	
+	//auxiliary private variables for methods 
 	private ArrayList<NodeRecord> nextQueue = new ArrayList<NodeRecord>();
+	private boolean found;
+	private Stack<String> path = new Stack<String>();
 	
 	/////all setters and getters	
 	public long getSerialversionuid() {

@@ -1,4 +1,4 @@
-<%@ page language="java" import="java.util.*" import="actions.*" contentType="text/html; charset=UTF-8"
+﻿<%@ page language="java" import="java.util.*" import="actions.*" contentType="text/html; charset=UTF-8"
 %>
     <jsp:useBean id="Generator" class="actions.NodeHash" scope="application"/>
     <jsp:useBean id="Model" class="actions.MainProcedure" scope="session"/>
@@ -814,6 +814,7 @@ WriteStorage();
                ctx.closePath();
                ctx.fill();
              ctx.restore();
+   	gfx.text(edge.data, (head.x + tail.x)/2, (head.y + tail.y)/2+7, {color:"black", align:"center", font:"Arial", size:8});
            }
        })
        sys.eachNode(function(node, pt){
@@ -1110,87 +1111,25 @@ WriteStorage();
      demo:"#a7af00"
    }
 
-   var theUI = {
-		   nodes:{
-			   <%for(int i=0; i<Model.neighborList1.size(); i++) {%>
-			   '<%=Model.neighborList1.get(i).front%>': {color:"grey", shape:"dot", alpha:1, mass:3},
-			   <%}%>
-			   <%for(int i=0; i<Model.neighborList2.size(); i++) {%>
-			   '<%=Model.neighborList2.get(i).front%>': {color:"grey", shape:"dot", alpha:1, mass:2},
-			   <%}%>
-			   <%for(int i=0; i<Model.neighborList3.size(); i++) {%>
-			   '<%=Model.neighborList3.get(i).front%>': {color:"grey", alpha:0, link:'javascript:FormTargeting("<%=Model.neighborList3.get(i).back%>")'},//'?TargetHash=<%=Model.neighborList3.get(i).back%>'},
-			   <%}%>
-			   '<%=charDesc.name%>': {color:"black", shape:"dot", alpha:1, mass:5}
-		   },
-  		   edges:{
-  			 	<%for(int i=0; i<Model.directedWeb.size(); i++) {%>
-  			 	'<%=Model.directedWeb.get(i).src%>':{
-  			 		<%for(int j=0; j<Model.directedWeb.get(i).dst.size(); j++) {%>
-  			 		'<%=Model.directedWeb.get(i).dst.get(j)%>':{length:.8},
-  			 		<%}%>
-  			 	},		
-  			 	<%}%>
-  		   }
-		   /*
-		   nodes:{'Yoda':{color:"green", shape:"dot", alpha:1, mass:5}, 
-			     
-	            'Quigon Jinn':{color:"green", shape:"dot", alpha:1, link:'arbor.html'}, 
-	            'Anakin Skywalker':{color:"blue", alpha:0, link:'#'},
-	            'Obiwan Kenobi':{color:"blue", alpha:0, link:'#'},
-
-	            'Plo koon':{color:"blue", shape:"dot", alpha:1}, 
-	            'Ashoka Tano':{color:"green", alpha:0, link:'#'},
-	            'Bultar Swan':{color:"green", alpha:0, link:'#'},
-	            'Lissarkh':{color:"blue", alpha:0, link:'#'},
-	            
-	            'Mace Windu':{color:"violet", shape:"dot", alpha:1}, 
-	            'Depa Billaba':{color:"red", alpha:0, link:'#'},
-	            'Echuu Shen-Jon':{color:"green", alpha:0, link:'#'},
-
-	            'Count Dooku':{color:"red", shape:"dot", alpha:1},
-	            'Cin Drallig':{color:"green", shape:"dot", alpha:1},
-	            'Keelyvine Reus':{color:"green", alpha:0, link:'#'},
-	           },
-	     edges:{
-	       'Yoda':{
-	    	 'Quigon Jinn':{length:.8},
-	    	 'Anakin Skywalker':{length:.8},
-	    	 'Obiwan Kenobi':{length:.8},
-	    	 'Plo koon':{length:.8},
-	    	 'Mace Windu':{length:.8},
-	    	 'Count Dooku':{length:.8},
-	    	 'Cin Drallig':{length:.8}
-	       },
-	       'Quigon Jinn':{
-	    	   'Anakin Skywalker':{},
-	    	   'Obiwan Kenobi':{}
-	       },
-	       'Anakin Skywalker':{'Ashoka Tano':{}
-	       },
-	       'Obiwan Kenobi':{'Anakin Skywalker':{},
-	    	   'Ashoka Tano':{}
-	       },
-	       'Plo koon':{'Ashoka Tano':{},
-	    	   'Bultar Swan':{},'Lissarkh':{}
-	       },
-	       'Mace Windu':{
-	    	   'Depa Billaba':{},
-	    	   'Echuu Shen-Jon':{}
-	       },
-	       'Count Dooku':{
-	    	   'Quigon Jinn':{},
-	       		'Keelyvine Reus':{}
-	       },
-	       'Cin Drallig':{
-	    	   'Anakin Skywalker':{}
-	       }
-	     }*/
-   }
+  
 
 
    var sys = arbor.ParticleSystem()
    sys.parameters({stiffness:900, repulsion:2000, gravity:true, dt:0.015})
+<%for(int i=0; i<Model.neighborList1.size(); i++) {%>
+   sys.addNode("<%=Model.neighborList1.get(i).front%>", {color:"grey", shape:"dot", alpha:1, mass:3})
+   <%}%>
+   <%for(int i=0; i<Model.neighborList2.size(); i++) {%>
+   sys.addNode("<%=Model.neighborList2.get(i).front%>", {color:"grey", shape:"dot", alpha:1, mass:2})
+   <%}%>
+   <%for(int i=0; i<Model.neighborList3.size(); i++) {%>
+   sys.addNode("<%=Model.neighborList3.get(i).front%>", {color:"grey", alpha:0, link:'javascript:FormTargeting("<%=Model.neighborList3.get(i).back%>")'})
+   <%}%>
+   sys.addNode("<%=charDesc.name%>", {color:"black", shape:"dot", alpha:1, mass:5})
+   <%for(int i=0; i<Model.directedWeb.size(); i++) {%>
+  	  <%for(int j=0; j<Model.directedWeb.get(i).dst.size(); j++) {%>
+			sys.addEdge("<%=Model.directedWeb.get(i).src%>","<%=Model.directedWeb.get(i).dst.get(j)%>", "<%=Model.directedWeb.get(i).info.get(j)%>")
+   <%}}%>
    sys.renderer = Renderer("#sitemap")
    sys.graft(theUI)
    

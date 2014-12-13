@@ -106,6 +106,22 @@ public class LinkDB extends DBManager{
 		return true;
 	}
 	
+	public boolean updateLink( String src, String des, String period ){
+		try{
+			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_LINK_SQL);
+            ps.setString(2, src);
+            ps.setString(3, des);
+            ps.setString(1, period);
+			
+            ps.executeUpdate();
+
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to update son.");
+			return false;
+		}
+		return true;
+	}
+	
 	public boolean createLinkTable() {
 		try{
 			super.connectionCheck();
@@ -119,13 +135,14 @@ public class LinkDB extends DBManager{
 	} 
 	
 	//public constants
-	public static String SELECT_LINK_SQL = "select * from link where src = ? and destiny = ?:";
+	public static String SELECT_LINK_SQL = "select * from link where src = ? and destiny = ?;";
 	public static String SELECT_LINK_SOURCE_SQL = "select * from link where src = ?;";
 	public static String SELECT_LINK_DESTINY_SQL = "select * from link where destiny = ?;";
 	public static String DELETE_LINK_SQL = "delete from link where src = ? and destiny = ?;";
 	public static String DELETE_LINK_SOURCE_SQL = "delete from link where src = ?;";
 	public static String DELETE_LINK_DESTINY_SQL = "delete from link where destiny = ?;";
 	public static String INSERT_LINK_SQL = "insert into link values(?, ?, ?);";
+	public static String UPDATE_LINK_SQL = "update node set period = ? where src = ? and destiny = ?;";
 	public static String CREATE_LINKTABLE_SQL = "create table link(" +
 			"src varchar(10) not null, " +
 			"destiny varchar(10), " +

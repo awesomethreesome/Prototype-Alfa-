@@ -18,6 +18,8 @@ public class TestDB {
 		ActionProxy proxy = null;
 		MainProcedure test = new MainProcedure();
 		
+		//stage 1
+		
 		//test.search("Dooku", "");
 		test.get("00000");
         //request.setParameter("queryType", "Title");
@@ -26,12 +28,15 @@ public class TestDB {
         //test = (MainProcedure)proxy.getAction();
         //proxy.execute();
         //String result = test.searchQuery();
-		
-        //assertEquals(1, test.searchList.size());
+		//assertEquals(1, test.searchList.size());
         assertEquals(2, test.neighborList1.size());
         assertEquals(2, test.neighborList2.size());
         assertEquals(0, test.neighborList3.size());
         assertEquals(0, test.directedWeb.size());
         //assertEquals( 1, test.getBookSR().size());
+        
+        //stage 2
+        
+        
 	}
 }
