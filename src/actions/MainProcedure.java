@@ -138,30 +138,36 @@ public class MainProcedure extends ActionSupport {
 	
 	//returns the hash of newly-added
 	//refresh historyList
-	public String add( CharDesc newInput ) {///////////////////////////////
-		if ( !authorityCheck() )//check authority
-			return null;	
-		//if there's no delete history and has record in DB, abandon operation
-		int historyIndex = searchHistorybyName( newInput.name );
-		ResultSet tempSet= searchDBbyName( newInput.name );
-		if ( historyIndex == INT_INVALID && tempSet != null ){//no record in history but in DB
-			return null;
-		}
-		else if (historyIndex != INT_INVALID && tempSet != null){//in DB in history but not been deleted || not in DB, but was not deleted in history  
-			String modRecord = history.ModRecord(historyIndex);
-			if ( modRecord.contains("delete") == false)
+	public String add( CharDesc newInput )  {///////////////////////////////
+		try {
+			if ( !authorityCheck() )//check authority
+				return null;	
+			//if there's no delete history and has record in DB, abandon operation
+			int historyIndex = searchHistorybyName( newInput.name );
+			ResultSet tempSet= searchDBbyName( newInput.name );
+			if ( historyIndex == INT_INVALID && tempSet.next() == true ){//no record in history but in DB
 				return null;
+			}
+			else if (historyIndex != INT_INVALID/* && tempSet.next() == true*/){//in DB in history but not been deleted || not in DB, but was not deleted in history  
+				String modRecord = history.ModRecord(historyIndex);
+				if ( modRecord.contains("delete") == false)
+					return null;
+			}
+			
+			String newHash = hashGenerator.generateHash();
+			NodeRecord temp = new NodeRecord( newHash, currentUser.getUserID(), ""/*son*/, ""/*father*/, 
+											  newInput.name, newInput.gender,newInput.birthDate, newInput.profession, newInput.institution, newInput.link, newInput.bio );
+			String modification = "add node: " + temp.getName();
+			
+			ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();
+			ModifiedNodes.add( new NodeRecord(temp) );
+			EditBuffer newBuffer = generateBuffer( ModifiedNodes );
+			history.pushBack(newBuffer, modification);
+			return temp.getKey();
+		}catch( Exception e ){
+			System.out.println("error in add(): exception");
+			return "";
 		}
-		
-		NodeRecord temp = new NodeRecord( hashGenerator.generateHash(),currentUser.getUserID(), ""/*son*/, ""/*father*/, 
-										  newInput.name, newInput.gender,newInput.birthDate, newInput.profession, newInput.institution, newInput.link, newInput.bio );
-		String modification = "Add node: " + temp.getName();
-		
-		ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();
-		ModifiedNodes.add( new NodeRecord(temp) );
-		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
-		history.pushBack(newBuffer, modification);
-		return temp.getKey();
 	}
 	
 	public boolean delete( String Hash ) throws SQLException {
@@ -170,7 +176,7 @@ public class MainProcedure extends ActionSupport {
 		//if there's no add history and has no record in DB, abandon operation
 		int historyIndex = searchHistory(Hash);
 		ResultSet tempSet= searchDB(Hash);
-		if ( historyIndex == INT_INVALID && tempSet == null ){//has no record in history or DB
+		if ( historyIndex == INT_INVALID && tempSet.next() == false ){//has no record in history or DB
 			return false;
 		}
 		else if (historyIndex != INT_INVALID ){//in DB in history but has been deleted ||not in DB, but was deleted in history  
@@ -178,7 +184,7 @@ public class MainProcedure extends ActionSupport {
 			if ( modRecord.contains("delete") == true)
 				return false;
 		}
-		
+		tempSet.beforeFirst();
 		NodeRecord source = getSource(Hash);
 		String modification = "delete node: " + source.getName();
 	
@@ -267,18 +273,28 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	//save changes to database
-	public void syncDB() throws SQLException {
-		//update all changes stored in history to DB
-		for (int i=0; i<history.size(); i++){//from the earliest to latest 
-			for ( int j=0; j<history.get(i).size(); j++){
-				String operation = history.ModRecord(i);
-				NodeRecord updater = new NodeRecord(history.get(i).get(j));
-				updateDB( updater, operation );
+	public void syncDB() {
+		try{
+			//update all changes stored in history to DB
+			for (int i=0; i<history.size(); i++){//from the earliest to latest 
+				for ( int j=0; j<history.get(i).size(); j++){
+					String operation = history.ModRecord(i);
+					NodeRecord updater = new NodeRecord(history.get(i).get(j));
+					if ( !operation.contains("delete") || j == history.get(i).size()-1 ){
+						updateDB( updater, operation );
+					}
+					//delete needs to update all related nods and delete the target node(which is at the last of it's EditBuffer)
+					else { 
+						updateDB( updater, "sever" );
+					}
+				}
 			}
+			updateLinkTable();
+			//clear history
+			history.clear();
+		}catch( Exception e ){
+			System.out.println("fatal error in syncDB");
 		}
-		updateLinkTable();
-		//clear history
-		history.clear();
 	}
 	
 	public boolean findPath( String srcHash, String desHash ) throws SQLException{
@@ -302,6 +318,7 @@ public class MainProcedure extends ActionSupport {
 				//check desHash
 				found = descendant.contains(desHash);
 				if ( found ){
+					visited.add(desHash);
 					break;
 				}
 				//check visited and add to nectQueue 
@@ -318,6 +335,7 @@ public class MainProcedure extends ActionSupport {
 			}
 			queue.clear();
 			queue = new ArrayList<String>( nextQueue_ );
+			nextQueue_.clear();
 		}
 		//back trace and form neighborListx and directedDAG
 		if ( found ){
@@ -411,7 +429,8 @@ public class MainProcedure extends ActionSupport {
 	private int searchHistory( String hash ){
 		for ( int i=history.size()-1; i>=0; i-- ){//search the history in the reversed direction to get latest changes
 			for ( int j=history.get(i).size()-1; j>=0; j-- ){
-				if ( history.get(i).get(j).getKey() == hash ){
+				String tempHash = history.get(i).get(j).getKey(); 
+				if ( hash.equals( tempHash ) ){
 					return i;
 				}
 			}
@@ -420,9 +439,9 @@ public class MainProcedure extends ActionSupport {
 	}
 	
 	private int searchHistorybyName( String name ){
-		for ( int i=history.size()-1; i>=0; i++ ){//search the history in the reversed direction to get latest changes
-			for ( int j=0; j<history.get(i).size();j++ ){
-				if ( history.get(i).get(j).getName() == name ){
+		for ( int i=history.size()-1; i>=0; i-- ){//search the history in the reversed direction to get latest changes
+			for ( int j=history.get(i).size()-1; j>=0; j-- ){
+				if ( name.equals( history.get(i).get(j).getName() ) ){
 					return i;
 				}
 			}
@@ -442,7 +461,7 @@ public class MainProcedure extends ActionSupport {
 			}
 			for (int i=0; i<history.get(index).size(); i++){
 				temp2 = history.get(index).get(i);
-				if (temp2.getKey() == hash){
+				if (temp2.getKey().equals( hash )){
 					break;
 				}
 			}
@@ -450,9 +469,10 @@ public class MainProcedure extends ActionSupport {
 		}
 		else{ 
 			temp = searchDB(hash);
-			if ( temp == null ){//not in buffer or DB
+			if ( temp.next() == false ){//not in buffer or DB
 				return null;
 			}
+			temp.beforeFirst();
 			temp2 = transcribeSingleRecord(temp);
 			return new NodeRecord(temp2);
 		}
@@ -476,9 +496,10 @@ public class MainProcedure extends ActionSupport {
 		}
 		else{ 
 			temp = searchDBbyName( sourceName );
-			if ( temp == null ){//not in buffer or DB
+			if ( temp.next() == false ){//not in buffer or DB
 				return null;
 			}
+			temp.beforeFirst();
 			temp2 = transcribeSingleRecord(temp);
 			return temp2.getKey();
 		}
@@ -504,7 +525,7 @@ public class MainProcedure extends ActionSupport {
 			dataBase.deleteNode(updater.getKey());
 		}
 		else if( operation.contains("sever") || operation.contains("link") || operation.contains("edit")){
-			dataBase.updateNode(updater.getKey(), updater.getName(), updater.getBirthDate(), 
+			dataBase.updateNode( updater.getFather(), updater.getSon(), updater.getKey(), updater.getName(), updater.getBirthDate(), 
 								updater.getProfession(), updater.getInstitution(), updater.getLink(), updater.getBio());
 		}
 		else
@@ -516,6 +537,10 @@ public class MainProcedure extends ActionSupport {
 		for (int i=0; i<history.size(); i++){
 			for (int j=0; j<history.get(i).size(); j++ ){
 				if ( history.ModRecord(i).contains("delete")){
+					int sourceIndex = history.get(i).size()-1;
+					teacher = history.get(i).get( sourceIndex );//potential hazard
+					dataBase.deleteLink(teacher.getKey(), true);
+					
 					
 				}
 				else if ( history.ModRecord(i).contains("sever") ){
@@ -780,8 +805,28 @@ public class MainProcedure extends ActionSupport {
 		NodeRecord studentRecord = new NodeRecord( studentSource );
 		//set new relation link
 		if ( !linkFlag ){
+			/*
 			String newSon = teacherRecord.getSon().replaceAll(student, "");
-			String newFather = studentRecord.getFather().replaceAll(teacher, ""); 
+			String newFather = studentRecord.getFather().replaceAll(teacher, "");
+			*/
+			ArrayList<String> son = sprawl( new NodeRecord( teacherRecord ), false );
+			ArrayList<String> father = sprawl( new NodeRecord( studentRecord ), true );
+			String newSon = teacherRecord.getSon();
+			String newFather = studentRecord.getFather();
+			if ( son.contains(student) ){
+				son.remove(student);
+				newSon = "";
+				for (int i=0; i<son.size(); i++){
+					newSon = newSon + son.get(i);
+				}
+			}
+			if ( father.contains(teacher) ){
+				father.remove(teacher);
+				newFather = "";
+				for ( int i=0; i<father.size(); i++ ){
+					newFather = newFather + father.get(i);
+				}
+			}
 			teacherRecord.setSon(newSon);
 			studentRecord.setFather(newFather);
 		}
@@ -830,7 +875,7 @@ public class MainProcedure extends ActionSupport {
 		if ( found ){
 			return;
 		}
-		else if ( current == des ){
+		else if ( current.equals( des ) ){
 			found = true;
 			path.push(current);
 			return;
@@ -880,10 +925,10 @@ public class MainProcedure extends ActionSupport {
 			appendtoNeighborList(temp, 0);
 			for ( int i=0; i<currentBuffer.size(); i++ ){
 				temp = currentBuffer.get(i);
-				if ( temp.getKey() != src && temp.getKey() != des){
+				if ( !temp.getKey().equals(src) && !temp.getKey().equals(des) ){
 					appendtoNeighborList( new NodeRecord(temp), 1 );
 				}
-			}
+			}   
 			
 			//set directedDAG
 			transcribeDAGList( new NodeRecord(), false );

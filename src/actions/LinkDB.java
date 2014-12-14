@@ -64,13 +64,13 @@ public class LinkDB extends DBManager{
 			PreparedStatement ps = dbConnection.prepareStatement(sqlQuery);
 			ps.setString(1, hash);
 			
-	        result = ps.executeQuery();
+	        ps.executeUpdate();
 	
 		}catch ( Exception e ) {
 			System.out.println("ERROR: fail to delete link .");
 			return false;
 		}
-		return false;
+		return true;
 
 	}
 	

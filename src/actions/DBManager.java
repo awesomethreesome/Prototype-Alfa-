@@ -125,7 +125,7 @@ public class DBManager {
 		return result;
     }
 
-    public boolean updateNode( String chosenKey, String upName, String upBirthdate, String upPro, String upIns, String upLink, String upBio){
+    public boolean updateNode( String upFather, String upSon, String chosenKey, String upName, String upBirthdate, String upPro, String upIns, String upLink, String upBio){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(UPDATE_NODE_INFO_SQL);
 			// update node set nodename = ?, age = ?, profession = ?, institution = ?, link = ? where key = ?;
@@ -135,7 +135,9 @@ public class DBManager {
             ps.setString(4, upIns);
             ps.setString(5, upLink);
             ps.setString(6, upBio);
-            ps.setString(7, chosenKey);
+            ps.setString(7, upFather);
+            ps.setString(8, upSon);
+            ps.setString(9, chosenKey);
 			
             ps.executeUpdate();
 
@@ -323,7 +325,7 @@ public class DBManager {
     public static String SELECT_NODE_BY_INS_AMIBIGUITY_SQL = "select * from node where institution like ?;";
     public static String SELECT_NODE_BY_PRO_AMIBIGUITY_SQL = "select * from node where profession like ?;";
     public static String SELECT_NODE_BY_FKEY_SQL = "select * from node where father = ?";
-    public static String UPDATE_NODE_INFO_SQL = "update node set nodename = ?, birthdate = ?, profession = ?, institution = ?, link = ?, bio = ? where nodekey = ?;";
+    public static String UPDATE_NODE_INFO_SQL = "update node set nodename = ?, birthdate = ?, profession = ?, institution = ?, link = ?, bio = ?, father = ?, son = ? where nodekey = ?;";
     public static String UPDATE_NODE_FATHER_SQL = "update node set father = ? where nodekey = ?;";
     public static String UPDATE_NODE_GENDER_SQL = "update node set gender = ? where nodekey = ?;";
     public static String UPDATE_NODE_BIO_SQL = "update node set bio = ? where nodekey = ?;";
