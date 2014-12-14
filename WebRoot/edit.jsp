@@ -1024,6 +1024,7 @@ WriteStorage();
                ctx.closePath();
                ctx.fill();
              ctx.restore();
+             if(edge.data!='[object Object]')
    	gfx.text(edge.data, (head.x + tail.x)/2, (head.y + tail.y)/2+7, {color:"black", align:"center", font:"Arial", size:8});
            }
        })
