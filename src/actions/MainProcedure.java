@@ -13,7 +13,7 @@ public class MainProcedure extends ActionSupport {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	
+	public boolean synced = true;
 	public static void main( String[] args ) {
 		MainProcedure test_case = new MainProcedure();
 	}
@@ -22,43 +22,136 @@ public class MainProcedure extends ActionSupport {
 		//System.out.println("create an instance");
 	}
 	/////public methods 
-	public void logInCheck( String inputUserName, String inputPassword ) throws SQLException{//name password 
-		System.out.println(inputPassword + " " + inputUserName);
-		
-		ResultSet temp = dataBase.selectUser( inputUserName ,  inputPassword );
-		if ( temp == null ) {
-			authorized = false;
-			return;
+	public void logInCheck( String inputUserName, String inputPassword ) {//name password
+		try{
+			System.out.println(inputPassword + " " + inputUserName);
+			
+			ResultSet temp = dataBase.selectUser( inputUserName ,  inputPassword );
+			if ( temp.next() == false ) {
+				authorized = false;
+				return;
+			}
+			temp.beforeFirst();
+			transcribeUser( temp );//current user info has be loaded into currentUser
+			authorized = true;
+			System.out.println("currentUser info: "+currentUser.getUserID() + " "+ currentUser.getRootList());
+		}catch( Exception e ){
+			System.out.println("error in logInCheck: exception: " + e.getMessage() +" cause: "+ e.getCause());
+			
 		}
-		transcribeUser( temp );//current user info has be loaded into currentUser
-		authorized = true;
-		System.out.println("currentUser info: "+currentUser.getUserID() + " "+ currentUser.getRootList());
 	}
 	
 	public void logOut(){
 		authorized = false;
 	}
 	
-	public ArrayList<ListItem> search( String queryInput, String queryType ) throws SQLException{
-		//queryType has 3 possible values{Name, Institution, Profession, }
-		ResultSet temp = null;
-		if ( "Institution".equals( queryType ) ) {
-			temp = dataBase.selectNodebyIns(queryInput, true);//search with ambiguity
+	public boolean signIn( String info, String name, String password ) {
+		try{
+			//check duplication
+			ResultSet temp = dataBase.selectUserName(name);
+			if ( temp.next() == true ){
+				return false;
+			}
+			//insert user
+			return dataBase.insertUser(name, password, info);
+		}catch( Exception e ){
+			System.out.println("error in signIn: exception: " + e.getMessage() +" cause: "+ e.getCause());
+			return false;
 		}
-		else if ( "Profession".equals(queryType) ) {
-			temp = dataBase.selectNodebyPro(queryInput, true);
-		}
-		else {//default option is search by name
-			System.out.println("going in");
-			temp = dataBase.selectNodebyName(queryInput, true);
-		}
-		//security
-		if (temp == null){
-			System.out.println("no result match");
+		
+	}
+	
+	
+	
+	
+	public ArrayList<ListItem> search( String queryInput, String queryType ) {
+		try{
+			//queryType has 3 possible values{Name, Institution, Profession, }
+			ResultSet temp = null;
+			if ( "Institution".equals( queryType ) ) {
+				temp = dataBase.selectNodebyIns(queryInput, true);//search with ambiguity
+			}
+			else if ( "Profession".equals(queryType) ) {
+				temp = dataBase.selectNodebyPro(queryInput, true);
+			}
+			else if ( !queryInput.contains("+") ){//default option is search by name
+				System.out.println("going in");
+				temp = dataBase.selectNodebyName(queryInput, true);
+			}
+			else {//search relation by name
+				findPathbyName( queryInput );
+				String srcName = new String();
+				int i=0; 
+				for ( i=0; i<queryInput.length(); i++){
+					if ( queryInput.charAt(i) == '+' ){
+						break;
+					}
+				}
+				srcName = queryInput.substring(0, i);
+				NodeRecord tempRecord = getSource( getSourceHashbyName(srcName) );
+				if ( tempRecord != null ){
+					searchList.add( new ListItem( tempRecord.getName(), tempRecord.getKey() ) );
+				}
+				return searchList;
+			}
+			//security
+			if (temp == null){
+				System.out.println("no result match");
+				return searchList;
+			}
+			transcribeSearchResult( temp );//now all possible node have been stored in searchList, which is a list of ListItem
+			//synchronize with buffer(front- name; back- hash)
+			for (int j=0; j<searchList.size(); j++){
+				for ( int i=history.size()-1; i>=0; i-- ){
+					if ( history.ModRecord(i).contains( searchList.get(j).front ) ){
+						if ( history.ModRecord(i).contains( "delete" ) ){
+							searchList.remove(j);
+						}
+						break;
+					}
+				}
+			}
+			NodeRecord tempRecord = getSource( getSourceHashbyName(queryInput) );
+			
+			if ( tempRecord != null ){
+				searchList.add( new ListItem( tempRecord.getName(), tempRecord.getKey() ) );
+			}
+			
 			return searchList;
+		}catch( Exception e ){
+			System.out.println("error in search: exception: "+ e.getMessage());
+			return null;
 		}
-		transcribeSearchResult( temp );//now all possible node have been stored in searchList, which is a list of ListItem
-		return searchList;
+	}
+	
+	public boolean findPathbyName( String input ){
+		try{
+			if ( input==null ){
+				return false;
+			}
+			
+			//get src and des name
+			String srcName = new String();
+			String desName = new String();
+			int i=0; 
+			for ( i=0; i<input.length(); i++){
+				if ( input.charAt(i) == '+' ){
+					break;
+				}
+			}
+			srcName = input.substring(0, i);
+			desName = input.substring(i+1, input.length());
+			String srcHash = getSourceHashbyName(srcName);
+			String desHash = getSourceHashbyName(desName);
+			if ( srcHash==null || desHash==null ){
+				return false;
+			}
+			
+			return findPath( srcHash, desHash);
+		}catch( Exception e ){
+			System.out.println("error in findPathbyName:");
+			return false;
+		}
 	}
 	
 	public NodeRecord detail( String Hash ) {
@@ -72,73 +165,99 @@ public class MainProcedure extends ActionSupport {
 		return temp;
 	}
 	
-	public String getLinkInfo( String source, String destiny ) throws SQLException{
-		//scan the history
-		NodeRecord srcNode = getSource( source );
-		ArrayList<String> srcDescendant = sprawl( srcNode, false );
-		String period = "";
-		for ( int i=0; i<srcDescendant.size(); i++ ){
-			if ( srcDescendant.get(i).equals(destiny) ){
-				period = transcribeLinkInfo( dataBase.selectLink(source, destiny) );
-				break;
+	//from DB
+	public String getLinkInfo( String source, String destiny ) {
+		try {
+			//scan the history
+			NodeRecord srcNode = getSource( source );
+			ArrayList<String> srcDescendant = sprawl( srcNode, false );
+			String period = "";
+			for ( int i=0; i<srcDescendant.size(); i++ ){
+				if ( srcDescendant.get(i).equals(destiny) ){
+					period = transcribeLinkInfo( dataBase.selectLink(source, destiny) );
+					break;
+				}
 			}
+			return period;
+		}catch( Exception e ){
+			System.out.println("error in getLinkInfo: exception: " + e.getMessage() +" cause: "+ e.getCause());
+			return null;
 		}
-		return period;
 	}
 	
 	//returns true when success, false otherwise.
 	//refresh historyList
 	// two inputs are all hash code
-	public boolean link(String teacher, String student, String period) throws SQLException {
-		if ( !authorityCheck() )
+	public boolean link(String teacher, String student, String period) {
+		try{
+			if ( !authorityCheck() )
+				return false;
+			ArrayList<NodeRecord> ModifiedNodes = changeRelation( teacher, student, true );
+			String modification = "link" +ModifiedNodes.get(0).getName()+ "as" +ModifiedNodes.get(1).getName()+ "-s teacher during " + period;
+			
+			EditBuffer newBuffer = generateBuffer( ModifiedNodes );
+			history.pushBack(newBuffer, modification);
+			return true;
+		}catch( Exception e ){
+			System.out.println("error in Link: exception: " + e.getMessage() +" cause: "+ e.getCause());
 			return false;
-		ArrayList<NodeRecord> ModifiedNodes = changeRelation( teacher, student, true );
-		String modification = "link" +ModifiedNodes.get(0).getName()+ "as" +ModifiedNodes.get(1).getName()+ "'s teacher during " + period;
-		
-		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
-		history.pushBack(newBuffer, modification);
-		return true;
+		}
 	}
 	
-	public boolean link2( String teaName, String stuName, String period ) throws SQLException{////////////////////////////////to do
-		if ( !authorityCheck() )
+	public boolean link2( String teaName, String stuName, String period ) {
+		try{
+			if ( !authorityCheck() )
+				return false;
+			//get hash
+			String teaHash = new String(), stuHash = new String();
+			teaHash = getSourceHashbyName( teaName );
+			stuHash = getSourceHashbyName( stuName );
+			
+			return link( teaHash, stuHash, period );
+		}catch( Exception e ){
+			System.out.println("error in Link2: exception: " + e.getMessage() +" cause: "+ e.getCause());
 			return false;
-		//get hash
-		String teaHash = new String(), stuHash = new String();
-		teaHash = getSourceHashbyName( teaName );
-		stuHash = getSourceHashbyName( stuName );
-		
-		return link( teaHash, stuHash, period );
+		}
 	}
 	
 	
-	public boolean sever2(String teaName, String stuName ) throws SQLException{////////////////////////////////to do
-		if ( !authorityCheck() )
+	public boolean sever2(String teaName, String stuName ) {
+		try{
+			if ( !authorityCheck() )
+				return false;
+			//get hash
+			String teaHash = new String(), stuHash = new String();
+			teaHash = getSourceHashbyName( teaName );
+			stuHash = getSourceHashbyName( stuName );
+			
+			return sever( teaHash, stuHash );
+		}catch( Exception e ){
+			System.out.println("error in sever2: exception: " + e.getMessage() +" cause: "+ e.getCause());
 			return false;
-		//get hash
-		String teaHash = new String(), stuHash = new String();
-		teaHash = getSourceHashbyName( teaName );
-		stuHash = getSourceHashbyName( stuName );
-		
-		return sever( teaHash, stuHash );
+		}
 	}
 	
 	//returns true when success, false otherwise.
 	//refresh historyList
-	public boolean sever(String teacher, String student) throws SQLException {
-		if ( !authorityCheck() )
+	public boolean sever(String teacher, String student) {
+		try{
+			if ( !authorityCheck() )
+				return false;
+			ArrayList<NodeRecord> ModifiedNodes = changeRelation( teacher, student, false );
+			String modification = "sever " +ModifiedNodes.get(0).getName()+ "and" +ModifiedNodes.get(1).getName();
+			
+			EditBuffer newBuffer = generateBuffer( ModifiedNodes );
+			history.pushBack(newBuffer, modification);
+			return true;
+		}catch( Exception e ){
+			System.out.println("error in sever: exception: " + e.getMessage() +" cause: "+ e.getCause());
 			return false;
-		ArrayList<NodeRecord> ModifiedNodes = changeRelation( teacher, student, false );
-		String modification = "sever " +ModifiedNodes.get(0).getName()+ "and" +ModifiedNodes.get(1).getName();
-		
-		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
-		history.pushBack(newBuffer, modification);
-		return true;
+		}
 	}
 	
 	//returns the hash of newly-added
 	//refresh historyList
-	public String add( CharDesc newInput )  {///////////////////////////////
+	public String add( CharDesc newInput )  {
 		try {
 			if ( !authorityCheck() )//check authority
 				return null;	
@@ -170,101 +289,116 @@ public class MainProcedure extends ActionSupport {
 		}
 	}
 	
-	public boolean delete( String Hash ) throws SQLException {
-		if ( !authorityCheck() )
-			return false;
-		//if there's no add history and has no record in DB, abandon operation
-		int historyIndex = searchHistory(Hash);
-		ResultSet tempSet= searchDB(Hash);
-		if ( historyIndex == INT_INVALID && tempSet.next() == false ){//has no record in history or DB
-			return false;
-		}
-		else if (historyIndex != INT_INVALID ){//in DB in history but has been deleted ||not in DB, but was deleted in history  
-			String modRecord = history.ModRecord(historyIndex);
-			if ( modRecord.contains("delete") == true)
+	public boolean delete( String Hash ) {
+		try{
+			if ( !authorityCheck() )
 				return false;
+			//if there's no add history and has no record in DB, abandon operation
+			int historyIndex = searchHistory(Hash);
+			ResultSet tempSet= searchDB(Hash);
+			if ( historyIndex == INT_INVALID && tempSet.next() == false ){//has no record in history or DB
+				return false;
+			}
+			else if (historyIndex != INT_INVALID ){//in DB in history but has been deleted ||not in DB, but was deleted in history  
+				String modRecord = history.ModRecord(historyIndex);
+				if ( modRecord.contains("delete") == true)
+					return false;
+			}
+			tempSet.beforeFirst();
+			NodeRecord source = getSource(Hash);
+			String modification = "delete node: " + source.getName();
+		
+			ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();	
+			//delete all related links
+			ArrayList<String> ascendant = sprawl( source, true );
+			ArrayList<String> descendant = sprawl( source, false );
+			ArrayList<NodeRecord> temp = new ArrayList<NodeRecord>(); 
+			for ( int i=0; i<ascendant.size(); i++ ){
+				temp = changeRelation( ascendant.get(i), Hash, false );
+				ModifiedNodes.add( new NodeRecord(temp.get(0)) );//push the teachers of 'Hash' into ModifiedNodes
+			}
+			for ( int j=0; j<descendant.size(); j++ ){
+				temp = changeRelation( Hash, descendant.get(j), false);
+				ModifiedNodes.add( new NodeRecord(temp.get(1)) );//push the students of 'Hash' into ModifiedNodes
+			}
+			//generate buffer
+			ModifiedNodes.add( new NodeRecord(source) );
+			EditBuffer newBuffer = generateBuffer( ModifiedNodes );
+			history.pushBack(newBuffer, modification);
+			return true;
+		}catch( Exception e ){
+			System.out.println("error in delete: exception: " + e.getMessage() +" cause: "+ e.getCause());
+			return false;
 		}
-		tempSet.beforeFirst();
-		NodeRecord source = getSource(Hash);
-		String modification = "delete node: " + source.getName();
-	
-		ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();	
-		//delete all related links
-		ArrayList<String> ascendant = sprawl( source, true );
-		ArrayList<String> descendant = sprawl( source, false );
-		ArrayList<NodeRecord> temp = new ArrayList<NodeRecord>(); 
-		for ( int i=0; i<ascendant.size(); i++ ){
-			temp = changeRelation( ascendant.get(i), Hash, false );
-			ModifiedNodes.add( new NodeRecord(temp.get(0)) );//push the teachers of 'Hash' into ModifiedNodes
-		}
-		for ( int j=0; j<descendant.size(); j++ ){
-			temp = changeRelation( Hash, descendant.get(j), false);
-			ModifiedNodes.add( new NodeRecord(temp.get(1)) );//push the students of 'Hash' into ModifiedNodes
-		}
-		//generate buffer
-		ModifiedNodes.add( new NodeRecord(source) );
-		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
-		history.pushBack(newBuffer, modification);
-		return true;
+		
 	}
 	
 	//returns null when not found
 	//refresh neighborLists and directedWeb
-	public CharDesc get(String hash) throws SQLException {
-		//int index = searchCurrentBuffer(hash);
-		/*
-		if ( index == INT_INVALID )
+	public CharDesc get(String hash) {
+		try{
+			//int index = searchCurrentBuffer(hash);
+			/*
+			if ( index == INT_INVALID )
+				return null;
+			*/
+			neighborList1.clear();
+			neighborList2.clear();
+			neighborList3.clear();
+			directedWeb.clear();
+			System.out.println("get hash:" + hash);
+			NodeRecord centralNode = loadCurrentBufferNeighborList(hash);
+			//history.clear();///////////////////////////////////////////////need an initial push? 
+			//security
+			if ( currentBuffer == null )
+				currentBuffer = new EditBuffer();
+			//security
+			if ( centralNode == null ){//fatal error
+				System.out.println("fatal error: target node does not exist");
+				return null;
+			}
+			transcribeDAGList( centralNode,true );
+			//getDAGLinkInfo();
+			
+			CharDesc tempCharDesc = new CharDesc(centralNode);
+			
+			System.out.println("at the end of get: ");
+			System.out.println("CharDesc: " + tempCharDesc.hash);
+			System.out.println("CharDesc: " + tempCharDesc.name);
+			System.out.println(neighborList1.size());
+			System.out.println(neighborList2.size());
+			System.out.println(neighborList3.size());
+			System.out.println(directedWeb.size());
+			return tempCharDesc;
+		}catch( Exception e ){
+			System.out.println("error in get: exception: " + e.getMessage() +" cause: "+ e.getCause());
 			return null;
-		*/
-		neighborList1.clear();
-		neighborList2.clear();
-		neighborList3.clear();
-		directedWeb.clear();
-		System.out.println("get hash:" + hash);
-		NodeRecord centralNode = loadCurrentBufferNeighborList(hash);
-		history.clear();///////////////////////////////////////////////need an initial push?
-		//security
-		if ( currentBuffer == null )
-			currentBuffer = new EditBuffer();
-		//security
-		if ( centralNode == null ){//fatal error
-			CharDesc errorCharDesc = new CharDesc();
-			errorCharDesc.hash = "fatal error: target node does not exist";
-			return errorCharDesc;
 		}
-		transcribeDAGList( centralNode,true );
-		//getDAGLinkInfo();
-		
-		CharDesc tempCharDesc = new CharDesc(centralNode);
-		
-		System.out.println("at the end of get: ");
-		System.out.println("CharDesc: " + tempCharDesc.hash);
-		System.out.println("CharDesc: " + tempCharDesc.name);
-		System.out.println(neighborList1.size());
-		System.out.println(neighborList2.size());
-		System.out.println(neighborList3.size());
-		System.out.println(directedWeb.size());
-		return tempCharDesc;
 	}
 	
 	//refresh historyList
-	public void edit(CharDesc target) throws SQLException {
-		if ( !authorityCheck() )
-			return;
-		
-		NodeRecord origin = getSource( target.hash );
-		if ( origin == null )//not found or has already been deleted 
-			return;
-		NodeRecord updater = new NodeRecord( target );
-		
-		NodeRecord target0 = edit_auxilary( updater, origin );
-		String modification = "edit node: " + target0.getName();
-		
-		ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();
-		ModifiedNodes.add(target0);
-		EditBuffer newBuffer = generateBuffer( ModifiedNodes );
-		history.pushBack(newBuffer, modification);
-		
+	public void edit(CharDesc target) {
+		try{
+			if ( !authorityCheck() )
+				return;
+			
+			NodeRecord origin = getSource( target.hash );
+			if ( origin == null )//not found or has already been deleted 
+				return;
+			NodeRecord updater = new NodeRecord( target );
+			
+			NodeRecord target0 = edit_auxilary( updater, origin );
+			String modification = "edit node: " + target0.getName();
+			
+			ArrayList<NodeRecord> ModifiedNodes = new ArrayList<NodeRecord>();
+			ModifiedNodes.add(target0);
+			EditBuffer newBuffer = generateBuffer( ModifiedNodes );
+			history.pushBack(newBuffer, modification);
+			System.out.println(modification + "size of history: " + history.size());
+		}catch( Exception e ){
+			System.out.println("error in edit: exception: " + e.getMessage() +" cause: "+ e.getCause());
+			return ;
+		}
 	}
 	
 	public void back2History(String back) {
@@ -297,53 +431,59 @@ public class MainProcedure extends ActionSupport {
 		}
 	}
 	
-	public boolean findPath( String srcHash, String desHash ) throws SQLException{
-		ArrayList<String> visited = new ArrayList<String>();
-		ArrayList<String> descendant = new ArrayList<String>();
-		ArrayList<String> queue = new ArrayList<String>(), nextQueue_ = new ArrayList<String>();
-		NodeRecord temp = new NodeRecord();
-		boolean found = false;
-		//BP algorithm
-		queue.add(srcHash);
-		visited.add(srcHash);
-		while ( !queue.isEmpty() ){
-			for  ( int i=0; i<queue.size(); i++ ){
-				temp = getSource( queue.get(i) );
-				//security
-				if ( temp == null ){
-					System.out.println("error in finPath: fail to getSource of " + queue.get(i));
-					continue;
+	public boolean findPath( String srcHash, String desHash ) {
+		try{
+			ArrayList<String> visited = new ArrayList<String>();
+			ArrayList<String> descendant = new ArrayList<String>();
+			ArrayList<String> queue = new ArrayList<String>(), nextQueue_ = new ArrayList<String>();
+			NodeRecord temp = new NodeRecord();
+			boolean found = false;
+			//BP algorithm
+			queue.add(srcHash);
+			visited.add(srcHash);
+			while ( !queue.isEmpty() ){
+				for  ( int i=0; i<queue.size(); i++ ){
+					temp = getSource( queue.get(i) );
+					//security
+					if ( temp == null ){
+						System.out.println("error in finPath: fail to getSource of " + queue.get(i));
+						continue;
+					}
+					descendant = sprawl( temp, false );
+					//check desHash
+					found = descendant.contains(desHash);
+					if ( found ){
+						visited.add(desHash);
+						break;
+					}
+					//check visited and add to nectQueue 
+					for ( int k=0; k<descendant.size(); k++){
+						if ( !visited.contains( descendant.get(k) ) ){
+							nextQueue_.add( descendant.get(k) );
+							visited.add( descendant.get(k) );
+						}
+					}
+					
 				}
-				descendant = sprawl( temp, false );
-				//check desHash
-				found = descendant.contains(desHash);
 				if ( found ){
-					visited.add(desHash);
 					break;
 				}
-				//check visited and add to nectQueue 
-				for ( int k=0; k<descendant.size(); k++){
-					if ( !visited.contains( descendant.get(k) ) ){
-						nextQueue_.add( descendant.get(k) );
-						visited.add( descendant.get(k) );
-					}
-				}
-				
+				queue.clear();
+				queue = new ArrayList<String>( nextQueue_ );
+				nextQueue_.clear();
 			}
+			//back trace and form neighborListx and directedDAG
 			if ( found ){
-				break;
+				tracePath( srcHash, desHash, visited );
+				fitPathtoNeighborListDAG(srcHash, desHash);
+				return true;
 			}
-			queue.clear();
-			queue = new ArrayList<String>( nextQueue_ );
-			nextQueue_.clear();
+			return false;
+		}catch( Exception e ){
+			System.out.println("error in findPath: exception: " + e.getMessage() +" cause: "+ e.getCause());
+			return false;
+			
 		}
-		//back trace and form neighborListx and directedDAG
-		if ( found ){
-			tracePath( srcHash, desHash, visited );
-			fitPathtoNeighborListDAG(srcHash, desHash);
-			return true;
-		}
-		return false;
 	}
 	
 	
@@ -532,7 +672,7 @@ public class MainProcedure extends ActionSupport {
 			return;
 	}
 	
-	private void updateLinkTable(){////////////////////////////////////////////////////////////////////
+	private void updateLinkTable() throws SQLException{////////////////////////////////////////////////////////////////////
 		NodeRecord teacher = new NodeRecord(), student = new NodeRecord();
 		for (int i=0; i<history.size(); i++){
 			for (int j=0; j<history.get(i).size(); j++ ){
@@ -540,7 +680,6 @@ public class MainProcedure extends ActionSupport {
 					int sourceIndex = history.get(i).size()-1;
 					teacher = history.get(i).get( sourceIndex );//potential hazard
 					dataBase.deleteLink(teacher.getKey(), true);
-					
 					
 				}
 				else if ( history.ModRecord(i).contains("sever") ){
@@ -552,10 +691,10 @@ public class MainProcedure extends ActionSupport {
 					teacher = history.get(i).get(0);//potential hazard
 					student = history.get(i).get(1);
 					String period = new String();
-					int index = history.ModRecord(i).indexOf("'s teacher during ");
-					int startIndex = index+"'s teacher during ".length(); 
+					int index = history.ModRecord(i).indexOf("-s teacher during ");//linkDarth MooreasGeneral Grievous-s teacher during 123
+					int startIndex = index+"-s teacher during ".length(); 
 					period = history.ModRecord(i).substring( startIndex );
-					if ( dataBase.selectLink( teacher.getKey(), student.getKey() ) == null ){
+					if ( dataBase.selectLink( teacher.getKey(), student.getKey() ).next() == false ){
 						dataBase.insertLink( teacher.getKey(), student.getKey(), period );
 					}
 					else {
@@ -769,7 +908,27 @@ public class MainProcedure extends ActionSupport {
 				temp.dst.add( tempName );
 				//added in 12.13.2014
 				linkInfo = getLinkInfo(  currentBuffer.get(i).getKey(), currentBuffer.get(index).getKey());
-				temp.info.add(linkInfo);
+				if ( linkInfo != null && !linkInfo.equals("") ){
+					temp.info.add(linkInfo);
+				}
+				else {//look the history///////////////////////////////117
+					String srcName =  temp.src;
+					String desName =  tempName;
+					String period = "";
+					int index_aux, startIndex;  
+					String mod = new String();
+					for ( int k=history.size()-1; k>=0; k-- ){
+						if ( history.ModRecord(k).contains(srcName) && history.ModRecord(k).contains(desName) ){
+							if ( history.ModRecord(k).contains("link") ){ 
+								index_aux = history.ModRecord(k).indexOf("-s teacher during ");//linkDarth MooreasGeneral Grievous-s teacher during 123
+								startIndex = index_aux+"-s teacher during ".length();
+								period = history.ModRecord(k).substring( startIndex );
+							}
+							break;
+						}
+					}
+					temp.info.add(period);
+				}
 				//added in 12.13.2014
 			}
 			if ( currentBuffer.get(i).getKey() != center.getKey() || flag == false ){
@@ -963,7 +1122,7 @@ public class MainProcedure extends ActionSupport {
 	
 	private UserRecord currentUser = new UserRecord() ;//current user
 	private EditBuffer currentBuffer = new EditBuffer();
-	private HistoryList history = new HistoryList();
+	public HistoryList history = new HistoryList();
 	
 	//auxiliary private variables for methods 
 	private ArrayList<NodeRecord> nextQueue = new ArrayList<NodeRecord>();

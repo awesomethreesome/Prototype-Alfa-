@@ -71,9 +71,36 @@ public class TestDB {
         test.syncDB();
         */
         //stage 7
-        test.findPath( "30001", "10001");
+        //test.findPath( "30001", "10001");
         
-        
+		/*
+		test.add(newInput);
+		test.link2("Dooku", "General Grievous", "");
+		*/
+		//stage 8
+		//test.signIn("test", "tester", "abc");
+		
+		//stage 9
+		//test.search("Yoda+Darth Vader", "");
+		
+        //stage 10
+		/*
+		newInput.name = "General Grievous";
+		test.add(newInput);
+		newInput.name = "Darth Moore";
+		test.add(newInput);
+		
+		test.search("Darth Moore", null);
+		*/
+		//stage 11 updateLinkInfo
+		/*
+		test.link2("Darth Moore", "General Grievous", "123");
+		test.get("10000");
+		test.syncDB();
+		*/
+		//stage 12
+		test.search("Yoda+Darth Vader", null);
+		
         assertEquals(2, test.neighborList1.size());
         assertEquals(2, test.neighborList2.size());
         assertEquals(0, test.neighborList3.size());

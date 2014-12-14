@@ -35,6 +35,7 @@
 		}
 		else if(submit!=null && submit.equals("Search")) {
 			searchQuery = request.getParameter("Search");
+			//throw new Exception(searchQuery);
 			Model.search(searchQuery,null);
 			expandSearchList = true;
 		}
@@ -42,30 +43,39 @@
 			edit = true;
 			charDesc = new CharDesc();
 			charDesc.hash = hash;
-			charDesc.name = request.getParameter("Name");
-			charDesc.birthDate = request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear");
+			charDesc.name = request.getParameter("CharName");
+			charDesc.gender = request.getParameter("gender");
+			charDesc.birthDate = request.getParameter("BirthYear")+"-"+request.getParameter("BirthMonth")+"-"+request.getParameter("BirthDate");
 			charDesc.institution = request.getParameter("Institution");
 			charDesc.profession = request.getParameter("Profession");
 			Model.edit(charDesc);
 		}
+		else if(submit!=null && submit.equals("Sync")) {
+			Model.syncDB();
+			Model.synced = true;
+		}
 		else if(submit!=null && submit.equals("New")) {
 			edit = true;
 			charDesc = new CharDesc();
-			charDesc.name = request.getParameter("Name");
-			charDesc.birthDate = request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear")+"-"+request.getParameter("BirthYear");
+			charDesc.name = request.getParameter("CharName");
+			charDesc.birthDate = request.getParameter("BirthYear")+"-"+request.getParameter("BirthMonth")+"-"+request.getParameter("BirthDate");
 			charDesc.institution = request.getParameter("Institution");
 			charDesc.profession = request.getParameter("Profession");
 			String addRst = Model.add(charDesc);
 			if(addRst==null) {
 				addFail = true;
+				if(charDesc.birthDate == null) throw new Exception("invalid birthDate = null"); 
+				if(charDesc.birthDate.length()!=10) throw new Exception("invalid birthDate="+charDesc.birthDate);
 				charDesc.birthYear = charDesc.birthDate.substring(0, 4);
 				charDesc.birthMonth = charDesc.birthDate.substring(5, 7);
 				charDesc.birthDate = charDesc.birthDate.substring(8, 10);
 			}
-			else
+			else{
 				hash = addRst;
+				}
 		}
 		else if(submit!=null && submit.equals("DeleteChar")) {
+			//throw new Exception(hash);
 			Model.delete(hash);
 		}
 		else if(submit!=null && submit.equals("Link")) {
@@ -86,12 +96,24 @@
 		else if(submit!=null && submit.equals("SeverAsFather")) {
 			severSucess = Model.sever(request.getParameter("linkhash"), hash);
 		}
+		else if(submit!=null && submit.equals("Register")) {
+			account = request.getParameter("Account");
+			password = request.getParameter("Password");
+			logedIn = Model.signIn("", account, password);
+		}
 		if(hash!=null) {
 			charDesc = Model.get(hash);
+			if(charDesc==null) hash=null;
+			else{
+			if(charDesc.birthDate == null) throw new Exception("invalid birthDate = null, char name="+charDesc.name+";hash="+charDesc.hash); 
+			if(charDesc.birthDate.length()!=10) throw new Exception("invalid birthDate="+charDesc.birthDate+";char name="+charDesc.name+";hash="+charDesc.hash);
 			charDesc.birthYear = charDesc.birthDate.substring(0, 4);
 			charDesc.birthMonth = charDesc.birthDate.substring(5, 7);
 			charDesc.birthDate = charDesc.birthDate.substring(8, 10);
+			}
 		}
+		if(submit!=null && (submit.equals("Edit")||submit.equals("New")||submit.equals("DeleteChar")||submit.equals("Link")||submit.equals("Sever")||submit.equals("LinkAddSon")||submit.equals("LinkAddFather")||submit.equals("SeverAsSon")||submit.equals("SeverAsFather")))
+		Model.synced = false;
 	%>
 <!DOCTYPE html>
 <html lang="en">
@@ -128,7 +150,8 @@
 			SaveBufferTimer = 0;
 			$("#SaveBufferSync").fadeOut(1500);
 			$("#SaveBufferDiv").fadeOut(1500);
-			return;
+			document.Targeting.submittype.value = "Sync";
+			document.Targeting.submit();
 		}
 		SaveBufferTimer += 2;
 		setTimeout("SaveBuffer();", 100);
@@ -139,11 +162,11 @@
 		document.EditInfo.submit();	
 	}
 	function CheckName() {
-		 var regexp = /[a-zA-Z]/;
-		 if(!regexp.test(document.EditInfo.Name.value)) {
+		 var regexp = /[a-zA-Z ]/;
+		 if(!regexp.test(document.EditInfo.CharName.value)) {
 			 ShowAlert("Invalid format of name. English letters only.");
 			 }
-		 return regexp.test(document.EditInfo.Name.value);
+		 return regexp.test(document.EditInfo.CharName.value);
 	}
 	function CheckDate() {
 		if(parseInt(document.EditInfo.BirthYear.value)>=1900 && parseInt(document.EditInfo.BirthYear.value)<=2014) {
@@ -397,11 +420,11 @@
 	}
 	var historyList = new Array();
 	<%
-		for(int i=0;i<Model.historyList.size();i++) {
+		for(int i=0;i<Model.history.size();i++) {
 			%>
 			listItem = new Object();
-			listItem.front = '<%=Model.historyList.get(i).front%>';
-			listItem.back = '<%=Model.historyList.get(i).back%>';
+			listItem.front = '<%=Model.history.ModRecord(i)%>';
+			listItem.back = '<%=i%>';
 			historyList[<%=i%>] = listItem;
 			<%
 		}
@@ -481,6 +504,13 @@
 			document.LogIn.RememberMe.value = "true";
 		document.LogIn.submit();
 	}
+	function FormRegister() {
+		document.LogIn.RememberMe.value = "false";
+		if(document.LogIn.RememberMe.checked)
+			document.LogIn.RememberMe.value = "true";
+		document.LogIn.submittype.value = "Register";
+		document.LogIn.submit();
+	}
 	function FormSearch() {
 		document.Search.submit();
 	}
@@ -489,34 +519,34 @@
 		document.Back2History.submit();
 	}
 	function DeleteChar() {
-		document.EditInfo.sumittype="DeleteChar";
-		document.EditIfo.submit();
+		document.EditInfo.submittype.value ="DeleteChar";
+		document.EditInfo.submit();
 	}
 	function CreateLink() {
-		document.LinkSever.submittype = "Link";
+		document.LinkSever.submittype.value = "Link";
 		document.LinkSever.submit();
 	}
 	function DeleteLink() {
-		document.LinkSever.submittype = "Sever";
+		document.LinkSever.submittype.value = "Sever";
 		document.LinkSever.submit();
 	}
 	function AddAsSon(sonHash) {
-		document.LinkSever.submittype = "LinkAddSon";
+		document.LinkSever.submittype.value = "LinkAddSon";
 		document.LinkSever.linkhash = sonHash;
 		document.LinkSever.submit();
 	}
 	function AddAsFather(fatherHash) {
-		document.LinkSever.submittype = "LinkAddFarther";
+		document.LinkSever.submittype.value = "LinkAddFarther";
 		document.LinkSever.linkhash = fatherHash;
 		document.LinkSever.submit();
 	}
 	function DeleteAsSon(sonHash) {
-		document.LinkSever.submittype = "SeverAsSon";
+		document.LinkSever.submittype.value = "SeverAsSon";
 		document.LinkSever.linkhash = sonHash;
 		document.LinkSever.submit();
 	}
 	function DeleteAsFather(fatherHash) {
-		document.LinkSever.submittype = "SeverAsFarther";
+		document.LinkSever.submittype.value = "SeverAsFarther";
 		document.LinkSever.linkhash = fatherHash;
 		document.LinkSever.submit();
 	}
@@ -677,15 +707,13 @@
         		</form>
       </div>
     </div>
-    <div class="page-header"><h2>Graph</h2>
+    
     <%if(hash != null) {%>
+    <div class="page-header"><h2>Graph</h2>
     <canvas id="sitemap" width="600" height="900" class="" style="opacity: 1;"></canvas>
-    Hmmm...<br>
-    Strong the force is, I sense within these circles and blocks.
-    <%} else { %>
-    <h3>To show the graph, select a target first, you must.</h3>
-    <%} %>
+ 	local relationship network is presented above.
     </div>
+    <%} %>
     <br>
 	<section id="forms">
 	<div class="page-header"><h2>Texts</h2>
@@ -700,6 +728,7 @@
           		<input type="password" class="input-large" placeholder="Password" name="Password">
           		<input type="hidden" name="submittype" value="LogIn">
        	 		<button class="btn" onclick="FormLogIn()">Log in</button>
+       	 		<button class="btn" onclick="FormRegister()">Register</button>
        	 		<br>
        	 		<label class="checkbox" onclick="ShowHidePassword()">
                 <input type="checkbox" id="ShowPassword">
@@ -728,7 +757,7 @@
             		<label>Name:</label>
             		<input type="text" class="input-large" value="<%=charDesc.name%>" name="CharName">
             		<label>Gender:</label>
-              			<select  name="selectlist" value="<%=charDesc.gender%>">
+              			<select  name="selectlist">
                 		<option>Male</option>
                 		<option>Female</option>
               		</select>
@@ -778,6 +807,7 @@
         		<%} %>
         	</fieldset>
         	<input type="hidden" value="" name="gender">
+        	<input type="hidden" value="<%=hash%>" name="TargetHash">
         	<input type="hidden" value="Edit" name="submittype">
         </form>
          <%} else if(logedIn){%>
@@ -832,6 +862,34 @@
 <script src="js/bootswatch.js"></script>
 <script language="javascript" type="text/javascript">
 
+
+<%if(submit!=null && submit.equals("Register") && !logedIn){%>
+ShowAlert('User name <%=account%> has already been taken. Try another please.');
+<%}%>
+<%if(submit!=null && submit.equals("LogIn") && !logedIn){%>
+ShowAlert('Incorrect username or password.');
+<%}%>
+<% if(submit!=null && submit.equals("Link") && !linkSucess) {%>
+ShowAlert('Error: Can not create link from <%=request.getParameter("LinkSource")%> to <%=request.getParameter("LinkTarget")%>.\n Possibly because one or more names do not exist');
+<%}%>
+<% if(submit!=null && submit.equals("Sever") && !severSucess) {%>
+ShowAlert('Error: Can not delete link from <%=request.getParameter("LinkSource")%> to <%=request.getParameter("LinkTarget")%>.\n Possibly because one or more names do not exist');
+<%}%>
+<% if(submit!=null && submit.equals("LinkAddSon") && !linkSucess) {%>
+ShowAlert('Error: Can not create link from hash <%=hash%> to hash <%=request.getParameter("linkhash")%>.');
+<%}%>
+<% if(submit!=null && submit.equals("LinkAddFather") && !linkSucess) {%>
+ShowAlert('Error: Can not create link from hash <%=request.getParameter("linkhash")%> to hash <%=hash%>.');
+<%}%>
+<% if(submit!=null && submit.equals("SeverAsSon") && !severSucess) {%>
+ShowAlert('Error: Can not delete link from hash <%=hash%> to hash <%=request.getParameter("linkhash")%>.');
+<%}%>
+<% if(submit!=null && submit.equals("SeverAsFather") && !severSucess) {%>
+ShowAlert('Error: Can not delete link from hash <%=request.getParameter("linkhash")%> to hash <%=hash%>.');
+<%}%>
+<%if(logedIn && hash!=null){%>
+document.EditInfo.selectlist.value = '<%=charDesc.gender%>';
+<%}%>
 <%if (addFail){%>
 	ShowAlert("Error: Duplicated name <%=charDesc.name%>. Try another please.");
 <%}%>
@@ -839,7 +897,7 @@
 	ShowSearchList();
 <%
 }%>
-<%if(edit) {%>
+<%if(!Model.synced) {%>
 FlashSaveButton();
 <%
 }%>

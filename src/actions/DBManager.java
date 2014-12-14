@@ -32,7 +32,38 @@ public class DBManager {
 		}
 		return result;
 	}
+    
+    public final ResultSet selectUserName( String name ){
+    	try{
+			PreparedStatement ps = dbConnection.prepareStatement(SELECT_USER_NAME_SQL);
+			ps.setString(1, name);
+			
+            result = ps.executeQuery();
+
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to select user name.");
+			return null;
+		}
+		return result;
+    }
 	 
+    public boolean insertUser( String name, String password, String rootlist/*info*/ ){
+    	try{
+			PreparedStatement ps = dbConnection.prepareStatement(INSERT_USER_SQL);
+			ps.setString(1, "");
+			ps.setString(2, name);
+            ps.setString(3, password);
+            ps.setString(4, rootlist);
+			
+            ps.executeUpdate();
+
+		}catch ( Exception e ) {
+			System.out.println("ERROR: fail to insert user.");
+			return false;
+		}
+		return true;
+    }
+    
 	public final ResultSet selectRootNodebyUserID( String userID ){
         try{
 			PreparedStatement ps = dbConnection.prepareStatement(SELECT_ROOTNODE_SQL);
@@ -315,7 +346,9 @@ public class DBManager {
 	/////public variables
 	
 	
-    public static String SELECT_USER_SQL = "select * from user where userid = ? and upassword = ?;";
+    public static String SELECT_USER_SQL = "select * from user where username = ? and upassword = ?;";
+    public static String SELECT_USER_NAME_SQL = "select * from user where username = ?;";
+    public static String INSERT_USER_SQL = "insert into user values( ?, ?, ?, ? );";
     public static String SELECT_ROOTNODE_SQL = "select * from node where userid = ? and father = ?;";
     public static String SELECT_NODE_BY_HASH_SQL = "select * from node where nodekey = ?;";
     public static String SELECT_NODE_BY_NAME_SQL = "select * from node where nodename = ?;";
@@ -348,8 +381,8 @@ public class DBManager {
             " bio varchar(1000)" +
 			");";
 	public static String CREATE_USERTABLE_SQL = "create table user(" +
-			"userid varchar(30) not null primary key, " +
-			"userName varchar(30) not null, " +
+			"userid varchar(30) not null, " +
+			"username varchar(30) not null, " +
 			"upassword varchar(30), " +
 			"rootlist varchar(100) " +
 			");";
