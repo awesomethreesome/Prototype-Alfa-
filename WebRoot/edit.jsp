@@ -854,7 +854,7 @@
 	
 </section>
  
-
+Javabean created at : <%=Model.timing %>
  </div>
 <!-- Don't change these sources! -->
 <script src="js/jquery.min.js"></script>

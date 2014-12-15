@@ -4,6 +4,8 @@ package actions;
  */
 import java.util.*;
 import java.sql.*;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 import com.opensymphony.xwork2.ActionSupport;
 
@@ -14,12 +16,15 @@ public class MainProcedure extends ActionSupport {
 	 */
 	private static final long serialVersionUID = 1L;
 	public boolean synced = true;
+	public String timing = new String();
 	public static void main( String[] args ) {
 		MainProcedure test_case = new MainProcedure();
 	}
 	//empty constructor
 	public MainProcedure(){
 		//System.out.println("create an instance");
+		SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		timing = df.format(new Date());
 	}
 	/////public methods 
 	public void logInCheck( String inputUserName, String inputPassword ) {//name password

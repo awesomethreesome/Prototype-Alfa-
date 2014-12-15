@@ -394,7 +394,9 @@ public class DBManager {
 	private final String dbName = "RandRwiki";
 	private final String dbURL = "jdbc:mysql://localhost:3306/" + dbName;
 	
+	
 	/*
+	//SAE
 	private final String userName = "m2l20j5xyk";
 	private final String passWord = "5ji00512yz0z4llhzwwijhkhwiwmjkyhj3hl1h21";
 	private final String dbName = "app_researchrelation";
