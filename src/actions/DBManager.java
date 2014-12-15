@@ -393,6 +393,13 @@ public class DBManager {
 	private final String passWord = "vorstellung";
 	private final String dbName = "RandRwiki";
 	private final String dbURL = "jdbc:mysql://localhost:3306/" + dbName;
+	
+	/*
+	private final String userName = "m2l20j5xyk";
+	private final String passWord = "5ji00512yz0z4llhzwwijhkhwiwmjkyhj3hl1h21";
+	private final String dbName = "app_researchrelation";
+	private final String dbURL = "jdbc:mysql://w.rdc.sae.sina.com.cn:3307/" + dbName;
+	*/
 	private final String NodeTable = "node";
 	private final String userTable = "user";
 	private final String driver = "com.mysql.jdbc.Driver"; 

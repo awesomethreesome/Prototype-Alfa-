@@ -88,6 +88,7 @@
 			linkSucess = Model.link(hash, request.getParameter("linkhash"), request.getParameter("LinkDate"));
 		}
 		else if(submit!=null && submit.equals("LinkAddFather")) {
+		//throw new Exception(hash+";"+request.getParameter("linkhash")+";"+request.getParameter("LinkDate"));
 			linkSucess = Model.link(request.getParameter("linkhash"), hash, request.getParameter("LinkDate"));
 		}
 		else if(submit!=null && submit.equals("SeverAsSon")) {
@@ -532,22 +533,22 @@
 	}
 	function AddAsSon(sonHash) {
 		document.LinkSever.submittype.value = "LinkAddSon";
-		document.LinkSever.linkhash = sonHash;
+		document.LinkSever.linkhash.value = sonHash;
 		document.LinkSever.submit();
 	}
 	function AddAsFather(fatherHash) {
-		document.LinkSever.submittype.value = "LinkAddFarther";
-		document.LinkSever.linkhash = fatherHash;
+		document.LinkSever.submittype.value = "LinkAddFather";
+		document.LinkSever.linkhash.value = fatherHash;
 		document.LinkSever.submit();
 	}
 	function DeleteAsSon(sonHash) {
 		document.LinkSever.submittype.value = "SeverAsSon";
-		document.LinkSever.linkhash = sonHash;
+		document.LinkSever.linkhash.value = sonHash;
 		document.LinkSever.submit();
 	}
 	function DeleteAsFather(fatherHash) {
-		document.LinkSever.submittype.value = "SeverAsFarther";
-		document.LinkSever.linkhash = fatherHash;
+		document.LinkSever.submittype.value = "SeverAsFather";
+		document.LinkSever.linkhash.value = fatherHash;
 		document.LinkSever.submit();
 	}
 	<%if(logedIn && rememberStr!=null && rememberStr.equals("true")) {%>
