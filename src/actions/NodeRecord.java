@@ -2,46 +2,81 @@ package actions;
 
 public class NodeRecord {
 	/////constructor
-	NodeRecord(){
+	public NodeRecord(){
 		
 	}
 		
 	public NodeRecord(NodeRecord nodeRecord) {
 		// TODO Auto-generated constructor stub
 		key = nodeRecord.getKey();
-		userID = new String(nodeRecord.getUserID());
-		son = new String(nodeRecord.getSon());
-		name = new String(nodeRecord.getName());
-		age = nodeRecord.getAge();
-		profession = new String(nodeRecord.getProfession());
-		institution = new String(nodeRecord.getInstitution());
-		link = new String(nodeRecord.getLink());
+		userID = nodeRecord.getUserID();
+		son = nodeRecord.getSon();
+		setFather(nodeRecord.getFather());
+		name = nodeRecord.getName();
+		gender = nodeRecord.getGender();
+		setBirthDate(nodeRecord.getBirthDate());
+		profession = nodeRecord.getProfession();
+		institution = nodeRecord.getInstitution();
+		link = nodeRecord.getLink();
+		Bio = nodeRecord.getBio();
 	}
-
+	
+	public NodeRecord ( CharDesc cd){
+		key = cd.hash;
+		userID = null;
+		son = null;
+		setFather(null);
+		name = new String(cd.name);
+		gender = cd.gender;
+		setBirthDate(cd.birthDate);
+		profession = new String(cd.profession);
+		institution = new String(cd.institution);
+		link = new String(cd.link);
+		Bio = cd.bio;
+	}
+	
+	public NodeRecord( String hash, String id, String decs, String asc, String name, String gender, String birth, 
+					   String pro, String ins, String link, String bio){
+		setKey(hash);
+		setUserID(id);
+		setSon(decs);
+		setFather(asc);
+		setName(name);
+		setGender(gender);
+		setBirthDate(birth);
+		setProfession(pro);
+		setInstitution(ins);
+		setLink(link);
+		setBio(bio);
+	}
+	
+	/////public methods
 	public void clear(){
 		key = STRING_INVALID;
 		userID = STRING_INVALID;
 		father = STRING_INVALID;
 		son = STRING_INVALID;
 		name = STRING_INVALID;
-		age = STRING_INVALID;
+		setBirthDate(STRING_INVALID);
 		profession = STRING_INVALID;
 		institution = STRING_INVALID;
 		link = STRING_INVALID;
 	}
 	
 	public static int INT_INVALID = -1;
-	public static String STRING_INVALID = "";
+	public static String STRING_INVALID = null;
 	
 	private String key;
 	private String userID;
 	private String father;
 	private String son;
 	private String name;
-	private String age;
+	private String gender;
+	private String birthDate;
 	private String profession;
 	private String institution;
 	private String link;//this suppose to be an valid URL
+	private String Bio;
 	
 	public String getKey() {
 		return key;
@@ -83,14 +118,6 @@ public class NodeRecord {
 		this.name = name;
 	}
 
-	public String getAge() {
-		return age;
-	}
-
-	public void setAge(String age) {
-		this.age = age;
-	}
-
 	public String getProfession() {
 		return profession;
 	}
@@ -114,6 +141,30 @@ public class NodeRecord {
 
 	public void setInstitution(String institution) {
 		this.institution = institution;
+	}
+
+	public String getGender() {
+		return gender;
+	}
+
+	public void setGender(String gender) {
+		this.gender = gender;
+	}
+
+	public String getBio() {
+		return Bio;
+	}
+
+	public void setBio(String bio) {
+		Bio = bio;
+	}
+
+	public String getBirthDate() {
+		return birthDate;
+	}
+
+	public void setBirthDate(String birthDate) {
+		this.birthDate = birthDate;
 	}
 
 }
